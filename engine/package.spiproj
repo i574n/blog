@@ -1,0 +1,11 @@
+packageDir: ../../spiral/lib
+packages:
+    |core-
+    spiral-
+modules:
+    html
+    post
+    page
+    index
+    site
+    build

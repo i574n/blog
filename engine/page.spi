@@ -1,0 +1,63 @@
+///- --package .
+open sm'_operators
+
+test page static =
+    open testing
+
+union kind =
+    | Article
+    | Release
+
+type author = { name : string; handle : string }
+
+type entry =
+    {
+        slug : string
+        title : string
+        date : string
+        kind : kind
+        authors : list author
+        blurb : string
+        blocks : list post.block
+    }
+
+inl kind_label (k : kind) : string =
+    match k with
+    | Article => ""
+    | Release => "Release"
+
+inl rec join_names (authors : list author) : string =
+    match authors with
+    | Nil => ""
+    | Cons (a, Nil) => html.escape a.name
+    | Cons (a, rest) => html.escape a.name ++# ", " ++# join_names rest
+
+inl rec render_blocks (blocks : list post.block) : string =
+    match blocks with
+    | Nil => ""
+    | Cons (b, rest) => post.render_block b ++# render_blocks rest
+
+inl render_entry (e : entry) : string =
+    "<article><h1 class=\"post-title\">" ++# html.escape e.title ++# "</h1>"
+    ++# "<p class=\"byline\">" ++# join_names e.authors ++# " &middot; " ++# html.escape e.date ++# "</p>"
+    ++# render_blocks e.blocks ++# "</article>"
+
+inl sample () : entry =
+    {
+        slug = "pipeline"
+        title = "Behind the Scenes of Spiral"
+        date = "2026-10-17"
+        kind = Article
+        authors = Cons ({ name = "i574n"; handle = "i574n" }, Nil)
+        blurb = "From a .spi file to 18 backends."
+        blocks = Cons (post.Heading "The Harness", Cons (post.Rule, Nil))
+    }
+
+test an_article_has_no_type_label =
+    kind_label Article |> _assert_eq ""
+
+test the_byline_lists_authors_and_date =
+    render_entry (sample ()) |> sm'.contains "<p class=\"byline\">i574n &middot; 2026-10-17</p>" |> _assert_eq true
+
+test blocks_render_in_order =
+    render_entry (sample ()) |> sm'.contains "<h2>The Harness</h2><hr class=\"section-rule\">" |> _assert_eq true

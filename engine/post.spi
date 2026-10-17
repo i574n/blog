@@ -1,0 +1,30 @@
+///- --package .
+open sm'_operators
+
+test post static =
+    open testing
+
+union block =
+    | Heading : string
+    | Paragraph : string
+    | Code : string * string
+    | Rule
+
+inl render_block (b : block) : string =
+    match b with
+    | Heading text => "<h2>" ++# html.escape text ++# "</h2>"
+    | Paragraph text => "<p>" ++# html.escape text ++# "</p>"
+    | Code (language, text) =>
+        inl opening = "<pre><code class=\"language-" ++# html.escape language
+        inl closing = "\">"
+        (opening ++# closing) ++# (html.escape text ++# "</code></pre>")
+    | Rule => "<hr class=\"section-rule\">"
+
+test a_heading_is_escaped =
+    render_block (Heading "Async & DNS") |> _assert_eq "<h2>Async &amp; DNS</h2>"
+
+test code_keeps_its_language =
+    render_block (Code ("spiral", "inl x = 1 < 2")) |> _assert_eq "<pre><code class=\"language-spiral\">inl x = 1 &lt; 2</code></pre>"
+
+test a_rule_separates_sections =
+    render_block Rule |> _assert_eq "<hr class=\"section-rule\">"

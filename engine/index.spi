@@ -1,0 +1,41 @@
+///- --package .
+open sm'_operators
+
+test index static =
+    open testing
+
+inl year_of (e : page.entry) : string = sm'.slice 0i32 3i32 e.date
+
+inl entry_row (e : page.entry) : string =
+    "<li class=\"post\"><time>" ++# html.escape e.date ++# "</time>"
+    ++# "<span class=\"kind\">" ++# page.kind_label e.kind ++# "</span>"
+    ++# "<a href=\"/" ++# html.escape e.slug ++# "/\">" ++# html.escape e.title ++# "</a>"
+    ++# "<p>" ++# html.escape e.blurb ++# "</p></li>"
+
+inl rec rows (current : string) (entries : list page.entry) : string =
+    match entries with
+    | Nil => if current = "" then "" else "</ul>"
+    | Cons (e, rest) =>
+        inl year = year_of e
+        if year = current then entry_row e ++# rows current rest
+        else
+            inl close = if current = "" then "" else "</ul>"
+            close ++# "<h2 class=\"year\">" ++# year ++# "</h2><ul>" ++# entry_row e ++# rows year rest
+
+inl featured (entries : list page.entry) : string =
+    match entries with
+    | Nil => ""
+    | Cons (e, _) => "<section class=\"featured\"><span class=\"badge\">Latest</span>" ++# entry_row e ++# "</section>"
+
+inl render_index (entries : list page.entry) : string =
+    "<nav class=\"tabs\"><a href=\"/\">Everything</a><a href=\"/articles/\">Articles</a><a href=\"/releases/\">Releases</a></nav>"
+    ++# featured entries ++# rows "" entries
+
+test the_year_comes_from_the_date =
+    year_of (page.sample ()) |> _assert_eq "2026"
+
+test the_index_features_the_latest_post =
+    render_index (Cons (page.sample (), Nil)) |> sm'.contains "<span class=\"badge\">Latest</span>" |> _assert_eq true
+
+test posts_are_grouped_under_their_year =
+    render_index (Cons (page.sample (), Nil)) |> sm'.contains "<h2 class=\"year\">2026</h2><ul>" |> _assert_eq true
