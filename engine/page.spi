@@ -57,12 +57,12 @@ inl render_entry (e : entry) : string =
 
 inl sample () : entry =
     {
-        slug = "pipeline"
-        title = "Behind the Scenes of Spiral"
+        slug = "sample"
+        title = "Sample Entry"
         date = "2026-10-17"
         kind = Article
         authors = Cons ({ name = "i574n"; handle = "i574n" }, Nil)
-        blurb = "From a .spi file to 18 backends."
+        blurb = "A fixture for the engine's own tests."
         blocks = Cons (post.Heading "The Matrix", Cons (post.Rule, Nil))
     }
 

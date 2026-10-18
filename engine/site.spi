@@ -38,7 +38,7 @@ inl rec paths (fs : list file) : string =
     | Cons (f, rest) => f.path ++# " " ++# paths rest
 
 test the_site_has_an_index_and_one_folder_per_post =
-    files (Cons (page.sample (), Nil)) |> paths |> _assert_eq "index.html style.css rss.xml articles/index.html releases/index.html pipeline/index.html"
+    files (Cons (page.sample (), Nil)) |> paths |> _assert_eq "index.html style.css rss.xml articles/index.html releases/index.html sample/index.html"
 
 test every_page_shares_the_layout =
     inl rec all_wrapped (fs : list file) : bool =
