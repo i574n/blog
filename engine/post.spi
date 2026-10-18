@@ -4,15 +4,39 @@ open sm'_operators
 test post static =
     open testing
 
+union block =
+    | Heading : string
+    | Paragraph : string
+    | Code : string * string
+    | Terminal : string * string
+    | Table : list string * list (list string)
+    | Note : string
+    | Rule
 
+inl rec cells (tag : string) (row : list string) : string =
+    match row with
+    | Nil => ""
+    | Cons (cell, rest) => "<" ++# tag ++# ">" ++# html.escape cell ++# "</" ++# tag ++# ">" ++# cells tag rest
 
+inl rec body_rows (rows : list (list string)) : string =
+    match rows with
+    | Nil => ""
+    | Cons (row, rest) => "<tr>" ++# cells "td" row ++# "</tr>" ++# body_rows rest
 
+inl render_block (b : block) : string =
+    match b with
     | Heading text => "<h2>" ++# html.escape text ++# "</h2>"
     | Paragraph text => "<p>" ++# html.escape text ++# "</p>"
     | Code (language, text) =>
         inl opening = "<pre><code class=\"language-" ++# html.escape language
         inl closing = "\">"
         (opening ++# closing) ++# (html.escape text ++# "</code></pre>")
+    | Terminal (command, output) =>
+        "<pre class=\"terminal\"><code><span class=\"prompt\">$ </span>" ++# html.escape command ++# "\n" ++# html.escape output ++# "</code></pre>"
+    | Table (head, rows) =>
+        "<table><thead><tr>" ++# cells "th" head ++# "</tr></thead><tbody>" ++# body_rows rows ++# "</tbody></table>"
+    | Note text => "<aside class=\"note\">" ++# html.escape text ++# "</aside>"
+    | Rule => "<hr class=\"section-rule\">"
 
 test a_heading_is_escaped =
     render_block (Heading "Async & DNS") |> _assert_eq "<h2>Async &amp; DNS</h2>"

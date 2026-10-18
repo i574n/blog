@@ -44,7 +44,8 @@ test every_page_shares_the_layout =
     inl rec all_wrapped (fs : list file) : bool =
         match fs with
         | Nil => true
-
+        | Cons (f, rest) when f.path |> sm'.ends_with ".html" => (f.content |> sm'.starts_with "<!doctype html>") && (f.content |> sm'.ends_with "</main></body></html>") && all_wrapped rest
+        | Cons (_, rest) => all_wrapped rest
     files (Cons (page.sample (), Nil)) |> all_wrapped |> _assert_eq true
 
 test the_post_page_title_is_escaped_into_the_head =
@@ -52,5 +53,5 @@ test the_post_page_title_is_escaped_into_the_head =
     files (Cons ({e with title = "A & B"}, Nil))
     |> fun fs =>
         match fs with
-
+        | Cons (_, Cons (_, Cons (_, Cons (_, Cons (_, Cons (post_file, _)))))) => post_file.content |> sm'.contains "<title>A &amp; B</title>" |> _assert_eq true
         | _ => failwith "expected a post file"
