@@ -50,7 +50,7 @@ inl sample () : entry =
         kind = Article
         authors = Cons ({ name = "i574n"; handle = "i574n" }, Nil)
         blurb = "From a .spi file to 18 backends."
-        blocks = Cons (post.Heading "The Harness", Cons (post.Rule, Nil))
+        blocks = Cons (post.Heading "The Matrix", Cons (post.Rule, Nil))
     }
 
 test an_article_has_no_type_label =
@@ -60,4 +60,4 @@ test the_byline_lists_authors_and_date =
     render_entry (sample ()) |> sm'.contains "<p class=\"byline\">i574n &middot; 2026-10-17</p>" |> _assert_eq true
 
 test blocks_render_in_order =
-    render_entry (sample ()) |> sm'.contains "<h2>The Harness</h2><hr class=\"section-rule\">" |> _assert_eq true
+    render_entry (sample ()) |> sm'.contains "<h2>The Matrix</h2><hr class=\"section-rule\">" |> _assert_eq true
