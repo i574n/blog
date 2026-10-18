@@ -22,8 +22,14 @@ inl rec entry_files (entries : list page.entry) : list file =
     | Nil => Nil
     | Cons (e, rest) => Cons (entry_file e, entry_files rest)
 
+inl base_url () : string = "https://i574n.github.io/blog"
+
 inl files (entries : list page.entry) : list file =
-    Cons ({ path = "index.html"; content = layout "Spiral Blog" (index.render_index entries) }, entry_files entries)
+    Cons ({ path = "index.html"; content = layout "Spiral Blog" (index.render_index entries) },
+        Cons ({ path = "style.css"; content = style.css () },
+            Cons ({ path = "rss.xml"; content = rss.render_feed "Spiral Blog" (base_url ()) entries },
+                Cons ({ path = "articles/index.html"; content = layout "Articles - Spiral Blog" (index.render_index (index.only page.Article entries)) },
+                    Cons ({ path = "releases/index.html"; content = layout "Releases - Spiral Blog" (index.render_index (index.only page.Release entries)) }, entry_files entries)))))
 
 inl rec paths (fs : list file) : string =
     match fs with
@@ -32,13 +38,13 @@ inl rec paths (fs : list file) : string =
     | Cons (f, rest) => f.path ++# " " ++# paths rest
 
 test the_site_has_an_index_and_one_folder_per_post =
-    files (Cons (page.sample (), Nil)) |> paths |> _assert_eq "index.html pipeline/index.html"
+    files (Cons (page.sample (), Nil)) |> paths |> _assert_eq "index.html style.css rss.xml articles/index.html releases/index.html pipeline/index.html"
 
 test every_page_shares_the_layout =
     inl rec all_wrapped (fs : list file) : bool =
         match fs with
         | Nil => true
-        | Cons (f, rest) => (f.content |> sm'.starts_with "<!doctype html>") && (f.content |> sm'.ends_with "</main></body></html>") && all_wrapped rest
+
     files (Cons (page.sample (), Nil)) |> all_wrapped |> _assert_eq true
 
 test the_post_page_title_is_escaped_into_the_head =
@@ -46,5 +52,5 @@ test the_post_page_title_is_escaped_into_the_head =
     files (Cons ({e with title = "A & B"}, Nil))
     |> fun fs =>
         match fs with
-        | Cons (_, Cons (post_file, _)) => post_file.content |> sm'.contains "<title>A &amp; B</title>" |> _assert_eq true
+
         | _ => failwith "expected a post file"

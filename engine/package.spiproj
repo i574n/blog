@@ -6,6 +6,9 @@ modules:
     html
     post
     page
+    pipeline
     index
+    rss
+    style
     site
     build

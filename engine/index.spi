@@ -27,6 +27,11 @@ inl featured (entries : list page.entry) : string =
     | Nil => ""
     | Cons (e, _) => "<section class=\"featured\"><span class=\"badge\">Latest</span>" ++# entry_row e ++# "</section>"
 
+inl rec only (kind : page.kind) (entries : list page.entry) : list page.entry =
+    match entries with
+    | Nil => Nil
+    | Cons (e, rest) => if e.kind = kind then Cons (e, only kind rest) else only kind rest
+
 inl render_index (entries : list page.entry) : string =
     "<nav class=\"tabs\"><a href=\"/\">Everything</a><a href=\"/articles/\">Articles</a><a href=\"/releases/\">Releases</a></nav>"
     ++# featured entries ++# rows "" entries
@@ -39,3 +44,8 @@ test the_index_features_the_latest_post =
 
 test posts_are_grouped_under_their_year =
     render_index (Cons (page.sample (), Nil)) |> sm'.contains "<h2 class=\"year\">2026</h2><ul>" |> _assert_eq true
+
+test a_tab_keeps_only_its_kind =
+    inl article = page.sample ()
+    inl release = { article with slug = "v3"; kind = page.Release }
+    Cons (article, Cons (release, Nil)) |> only page.Release |> listm.length |> _assert_eq 1
