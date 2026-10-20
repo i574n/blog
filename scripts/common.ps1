@@ -21,7 +21,7 @@ function Invoke-SpiralTests([Parameter(Mandatory)] [string] $PackageDir, [Parame
     try {
         foreach ($module in $Modules) {
             $runner = Join-Path $SpiralRoot 'apps/cells/spi/run_notebook.ps1'
-            { pwsh -NoProfile -File $runner --path (Join-Path $PackageDir "$module.spi") --output-path (Join-Path $notebooks "$module.spi.ipynb") --no-html } | Invoke-Block
+            { pwsh -NoProfile -File $runner --path (Join-Path $PackageDir "$module.spi") --output-path (Join-Path $notebooks "$module.spi.ipynb") --no-html --livemd } | Invoke-Block
         }
     } finally {
         $env:SPIRAL_CELLS_COMPILER, $env:SPIRAL_CELLS_WARM = $saved

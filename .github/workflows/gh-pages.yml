@@ -22,7 +22,7 @@ jobs:
 
       - uses: moonrepo/setup-rust@v1.3.0
         with:
-          channel: "stable"
+          channel: "nightly-2026-10-18"
 
       - uses: erlef/setup-beam@v1.24.1
         with:
