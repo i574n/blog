@@ -6,8 +6,18 @@ test rss static =
 
 inl item (base : string) (e : page.entry) : string =
     inl link = base ++# "/" ++# html.escape e.slug ++# "/"
-    "<item><title>" ++# html.escape e.title ++# "</title><link>" ++# link ++# "</link><guid>" ++# link ++# "</guid>"
-    ++# "<dc:date>" ++# html.escape e.date ++# "</dc:date><description>" ++# html.escape e.blurb ++# "</description></item>"
+    "<item><title>"
+    ++# html.escape e.title
+    ++# "</title><link>"
+    ++# link
+    ++# "</link><guid>"
+    ++# link
+    ++# "</guid>"
+    ++# "<dc:date>"
+    ++# html.escape e.date
+    ++# "</dc:date><description>"
+    ++# html.escape e.blurb
+    ++# "</description></item>"
 
 inl rec items (base : string) (entries : list page.entry) : string =
     match entries with
@@ -17,8 +27,15 @@ inl rec items (base : string) (entries : list page.entry) : string =
 inl render_feed (title : string) (base : string) (entries : list page.entry) : string =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     ++# "<rss version=\"2.0\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><channel>"
-    ++# "<title>" ++# html.escape title ++# "</title><link>" ++# base ++# "/</link><description>" ++# html.escape title ++# "</description>"
-    ++# items base entries ++# "</channel></rss>"
+    ++# "<title>"
+    ++# html.escape title
+    ++# "</title><link>"
+    ++# base
+    ++# "/</link><description>"
+    ++# html.escape title
+    ++# "</description>"
+    ++# items base entries
+    ++# "</channel></rss>"
 
 test the_feed_links_each_post_by_its_slug =
     render_feed "Spiral Blog" "https://i574n.github.io/blog" (Cons (page.sample (), Nil))
@@ -27,5 +44,7 @@ test the_feed_links_each_post_by_its_slug =
 
 test the_feed_is_rss_2_with_dublin_core_dates =
     render_feed "Spiral Blog" "https://i574n.github.io/blog" (Cons (page.sample (), Nil))
-    |> fun feed => (feed |> sm'.starts_with "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"") && (feed |> sm'.contains "<dc:date>2026-10-17</dc:date>")
+    |> fun feed =>
+           (feed |> sm'.starts_with "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"")
+           && (feed |> sm'.contains "<dc:date>2026-10-17</dc:date>")
     |> _assert_eq true

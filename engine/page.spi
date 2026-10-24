@@ -43,7 +43,12 @@ inl rec toc_items (section : i32) (blocks : list post.block) : string =
     match blocks with
     | Nil => ""
     | Cons (post.Heading text, rest) =>
-        "<li><a href=\"#section-" ++#? section ++# "\">" ++# html.escape text ++# "</a></li>" ++# toc_items (section + 1) rest
+        "<li><a href=\"#section-"
+        ++#? section
+        ++# "\">"
+        ++# html.escape text
+        ++# "</a></li>"
+        ++# toc_items (section + 1) rest
     | Cons (_, rest) => toc_items section rest
 
 inl table_of_contents (blocks : list post.block) : string =
@@ -73,11 +78,16 @@ test the_byline_lists_authors_and_date =
     render_entry (sample ()) |> sm'.contains "<p class=\"byline\">i574n &middot; 2026-10-17</p>" |> _assert_eq true
 
 test blocks_render_in_order =
-    render_entry (sample ()) |> sm'.contains "<h2 id=\"section-1\">The Matrix</h2><hr class=\"section-rule\">" |> _assert_eq true
+    render_entry (sample ())
+    |> sm'.contains "<h2 id=\"section-1\">The Matrix</h2><hr class=\"section-rule\">"
+    |> _assert_eq true
 
 test the_table_of_contents_links_every_heading =
     table_of_contents (Cons (post.Heading "A", Cons (post.Paragraph "x", Cons (post.Heading "B", Nil))))
-    |> _assert_eq "<nav class=\"toc\"><p>On this page</p><ol><li><a href=\"#section-1\">A</a></li><li><a href=\"#section-2\">B</a></li></ol></nav>"
+    |> _assert_eq (
+           "<nav class=\"toc\"><p>On this page</p><ol><li><a href=\"#section-1\">A</a></li><li><a "
+           ^^ "href=\"#section-2\">B</a></li></ol></nav>"
+       )
 
 test a_post_without_headings_has_no_table_of_contents =
     table_of_contents (Cons (post.Paragraph "x", Nil)) |> _assert_eq ""

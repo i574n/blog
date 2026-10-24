@@ -33,8 +33,12 @@ inl rec only (kind : page.kind) (entries : list page.entry) : list page.entry =
     | Cons (e, rest) => if e.kind = kind then Cons (e, only kind rest) else only kind rest
 
 inl render_index (entries : list page.entry) : string =
-    "<nav class=\"tabs\"><a href=\"/\">Everything</a><a href=\"/articles/\">Articles</a><a href=\"/releases/\">Releases</a></nav>"
-    ++# featured entries ++# rows "" entries
+    (
+        "<nav class=\"tabs\"><a href=\"/\">Everything</a><a href=\"/articles/\">Articles</a><a "
+        ^^ "href=\"/releases/\">Releases</a></nav>"
+    )
+    ++# featured entries
+    ++# rows "" entries
 
 test the_year_comes_from_the_date =
     year_of (page.sample ()) |> _assert_eq "2026"
