@@ -1,0 +1,147 @@
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --package .\nopen sm'_operators","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --package .
+  open sm'_operators
+  """,
+  timeout: 300_000
+)
+```
+
+#### site (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test static\n\nopen testing","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test static
+
+  open testing
+  """,
+  timeout: 300_000
+)
+```
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"type file = { path : string; content : string }\n\ninl layout (title : string) (body : string) : string =\n    \"<!doctype html><html lang=\\\"en\\\"><head><meta charset=\\\"utf-8\\\">\"\n    ++# \"<meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\">\"\n    ++# \"<title>\" ++# html.escape title ++# \"</title>\"\n    ++# \"<link rel=\\\"stylesheet\\\" href=\\\"/style.css\\\"></head>\"\n    ++# \"<body><header><a class=\\\"home\\\" href=\\\"/\\\">Spiral Blog</a></header><main>\"\n    ++# body ++# \"</main></body></html>\"\n\ninl entry_file (e : page.entry) : file =\n    { path = e.slug ++# \"/index.html\"; content = layout e.title (page.render_entry e) }\n\ninl rec entry_files (entries : list page.entry) : list file =\n    match entries with\n    | Nil => Nil\n    | Cons (e, rest) => Cons (entry_file e, entry_files rest)\n\ninl base_url () : string = \"https://i574n.github.io/blog\"\n\ninl files (entries : list page.entry) : list file =\n    Cons (\n        { path = \"index.html\"; content = layout \"Spiral Blog\" (index.render_index entries) },\n        Cons (\n            { path = \"style.css\"; content = style.css () },\n            Cons (\n                { path = \"rss.xml\"; content = rss.render_feed \"Spiral Blog\" (base_url ()) entries },\n                Cons (\n                    {\n                        path = \"articles/index.html\"\n                        content = layout \"Articles - Spiral Blog\" (index.render_index (index.only page.Article entries))\n                    },\n                    Cons (\n                        {\n                            path = \"releases/index.html\"\n                            content =\n                                layout \"Releases - Spiral Blog\" (index.render_index (index.only page.Release entries))\n                        },\n                        entry_files entries\n                    )\n                )\n            )\n        )\n    )\n\ninl rec paths (fs : list file) : string =\n    match fs with\n    | Nil => \"\"\n    | Cons (f, Nil) => f.path\n    | Cons (f, rest) => f.path ++# \" \" ++# paths rest","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  type file = { path : string; content : string }
+
+  inl layout (title : string) (body : string) : string =
+      "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
+      ++# "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+      ++# "<title>" ++# html.escape title ++# "</title>"
+      ++# "<link rel=\"stylesheet\" href=\"/style.css\"></head>"
+      ++# "<body><header><a class=\"home\" href=\"/\">Spiral Blog</a></header><main>"
+      ++# body ++# "</main></body></html>"
+
+  inl entry_file (e : page.entry) : file =
+      { path = e.slug ++# "/index.html"; content = layout e.title (page.render_entry e) }
+
+  inl rec entry_files (entries : list page.entry) : list file =
+      match entries with
+      | Nil => Nil
+      | Cons (e, rest) => Cons (entry_file e, entry_files rest)
+
+  inl base_url () : string = "https://i574n.github.io/blog"
+
+  inl files (entries : list page.entry) : list file =
+      Cons (
+          { path = "index.html"; content = layout "Spiral Blog" (index.render_index entries) },
+          Cons (
+              { path = "style.css"; content = style.css () },
+              Cons (
+                  { path = "rss.xml"; content = rss.render_feed "Spiral Blog" (base_url ()) entries },
+                  Cons (
+                      {
+                          path = "articles/index.html"
+                          content = layout "Articles - Spiral Blog" (index.render_index (index.only page.Article entries))
+                      },
+                      Cons (
+                          {
+                              path = "releases/index.html"
+                              content =
+                                  layout "Releases - Spiral Blog" (index.render_index (index.only page.Release entries))
+                          },
+                          entry_files entries
+                      )
+                  )
+              )
+          )
+      )
+
+  inl rec paths (fs : list file) : string =
+      match fs with
+      | Nil => ""
+      | Cons (f, Nil) => f.path
+      | Cons (f, rest) => f.path ++# " " ++# paths rest
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_site_has_an_index_and_one_folder_per_post (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nfiles (Cons (page.sample (), Nil))\n|> paths\n|> _assert_eq \"index.html style.css rss.xml articles/index.html releases/index.html sample/index.html\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  files (Cons (page.sample (), Nil))
+  |> paths
+  |> _assert_eq "index.html style.css rss.xml articles/index.html releases/index.html sample/index.html"
+  """,
+  timeout: 300_000
+)
+```
+
+#### every_page_shares_the_layout (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\ninl rec all_wrapped (fs : list file) : bool =\n    match fs with\n    | Nil => true\n    | Cons (f, rest) when f.path |> sm'.ends_with \".html\" =>\n        (f.content |> sm'.starts_with \"<!doctype html>\")\n        && (f.content |> sm'.ends_with \"</main></body></html>\")\n        && all_wrapped rest\n    | Cons (_, rest) => all_wrapped rest\nfiles (Cons (page.sample (), Nil)) |> all_wrapped |> _assert_eq true","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  inl rec all_wrapped (fs : list file) : bool =
+      match fs with
+      | Nil => true
+      | Cons (f, rest) when f.path |> sm'.ends_with ".html" =>
+          (f.content |> sm'.starts_with "<!doctype html>")
+          && (f.content |> sm'.ends_with "</main></body></html>")
+          && all_wrapped rest
+      | Cons (_, rest) => all_wrapped rest
+  files (Cons (page.sample (), Nil)) |> all_wrapped |> _assert_eq true
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_post_page_title_is_escaped_into_the_head (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\ninl e = page.sample ()\nfiles (Cons ({ e with title = \"A & B\" }, Nil))\n|> fun fs =>\n    match fs with\n    | Cons (_, Cons (_, Cons (_, Cons (_, Cons (_, Cons (post_file, _)))))) =>\n        post_file.content |> sm'.contains \"<title>A &amp; B</title>\" |> _assert_eq true\n    | _ => failwith \"expected a post file\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  inl e = page.sample ()
+  files (Cons ({ e with title = "A & B" }, Nil))
+  |> fun fs =>
+      match fs with
+      | Cons (_, Cons (_, Cons (_, Cons (_, Cons (_, Cons (post_file, _)))))) =>
+          post_file.content |> sm'.contains "<title>A &amp; B</title>" |> _assert_eq true
+      | _ => failwith "expected a post file"
+  """,
+  timeout: 300_000
+)
+```

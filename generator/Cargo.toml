@@ -1,0 +1,16 @@
+[package]
+name = "blog_generate"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[package.metadata.spiral]
+entry = "../engine/generate.spi"
+output = "../engine/generate.rs"
+
+[[bin]]
+name = "blog-generate"
+path = "../engine/generate.rs"
+
+[dependencies]
+chrono = "0.4"

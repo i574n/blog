@@ -1,0 +1,104 @@
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --package .\nopen sm'_operators","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --package .
+  open sm'_operators
+  """,
+  timeout: 300_000
+)
+```
+
+#### rss (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test static\n\nopen testing","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test static
+
+  open testing
+  """,
+  timeout: 300_000
+)
+```
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"inl item (base : string) (e : page.entry) : string =\n    inl link = base ++# \"/\" ++# html.escape e.slug ++# \"/\"\n    \"<item><title>\"\n    ++# html.escape e.title\n    ++# \"</title><link>\"\n    ++# link\n    ++# \"</link><guid>\"\n    ++# link\n    ++# \"</guid>\"\n    ++# \"<dc:date>\"\n    ++# html.escape e.date\n    ++# \"</dc:date><description>\"\n    ++# html.escape e.blurb\n    ++# \"</description></item>\"\n\ninl rec items (base : string) (entries : list page.entry) : string =\n    match entries with\n    | Nil => \"\"\n    | Cons (e, rest) => item base e ++# items base rest\n\ninl render_feed (title : string) (base : string) (entries : list page.entry) : string =\n    \"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\"\n    ++# \"<rss version=\\\"2.0\\\" xmlns:dc=\\\"http://purl.org/dc/elements/1.1/\\\"><channel>\"\n    ++# \"<title>\"\n    ++# html.escape title\n    ++# \"</title><link>\"\n    ++# base\n    ++# \"/</link><description>\"\n    ++# html.escape title\n    ++# \"</description>\"\n    ++# items base entries\n    ++# \"</channel></rss>\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  inl item (base : string) (e : page.entry) : string =
+      inl link = base ++# "/" ++# html.escape e.slug ++# "/"
+      "<item><title>"
+      ++# html.escape e.title
+      ++# "</title><link>"
+      ++# link
+      ++# "</link><guid>"
+      ++# link
+      ++# "</guid>"
+      ++# "<dc:date>"
+      ++# html.escape e.date
+      ++# "</dc:date><description>"
+      ++# html.escape e.blurb
+      ++# "</description></item>"
+
+  inl rec items (base : string) (entries : list page.entry) : string =
+      match entries with
+      | Nil => ""
+      | Cons (e, rest) => item base e ++# items base rest
+
+  inl render_feed (title : string) (base : string) (entries : list page.entry) : string =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      ++# "<rss version=\"2.0\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><channel>"
+      ++# "<title>"
+      ++# html.escape title
+      ++# "</title><link>"
+      ++# base
+      ++# "/</link><description>"
+      ++# html.escape title
+      ++# "</description>"
+      ++# items base entries
+      ++# "</channel></rss>"
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_feed_links_each_post_by_its_slug (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_feed \"Spiral Blog\" \"https://i574n.github.io/blog\" (Cons (page.sample (), Nil))\n|> sm'.contains \"<item><title>Sample Entry</title><link>https://i574n.github.io/blog/sample/</link>\"\n|> _assert_eq true","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_feed "Spiral Blog" "https://i574n.github.io/blog" (Cons (page.sample (), Nil))
+  |> sm'.contains "<item><title>Sample Entry</title><link>https://i574n.github.io/blog/sample/</link>"
+  |> _assert_eq true
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_feed_is_rss_2_with_dublin_core_dates (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_feed \"Spiral Blog\" \"https://i574n.github.io/blog\" (Cons (page.sample (), Nil))\n|> fun feed =>\n       (feed |> sm'.starts_with \"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?><rss version=\\\"2.0\\\"\")\n       && (feed |> sm'.contains \"<dc:date>2026-10-17</dc:date>\")\n|> _assert_eq true","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_feed "Spiral Blog" "https://i574n.github.io/blog" (Cons (page.sample (), Nil))
+  |> fun feed =>
+         (feed |> sm'.starts_with "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"")
+         && (feed |> sm'.contains "<dc:date>2026-10-17</dc:date>")
+  |> _assert_eq true
+  """,
+  timeout: 300_000
+)
+```

@@ -1,0 +1,71 @@
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --package .","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --package .
+  """,
+  timeout: 300_000
+)
+```
+
+#### html (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test static\n\nopen testing","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test static
+
+  open testing
+  """,
+  timeout: 300_000
+)
+```
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"inl escape (text : string) : string =\n    text\n    |> sm'.replace \"&\" \"&amp;\"\n    |> sm'.replace \"<\" \"&lt;\"\n    |> sm'.replace \">\" \"&gt;\"\n    |> sm'.replace \"\\\"\" \"&quot;\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  inl escape (text : string) : string =
+      text
+      |> sm'.replace "&" "&amp;"
+      |> sm'.replace "<" "&lt;"
+      |> sm'.replace ">" "&gt;"
+      |> sm'.replace "\"" "&quot;"
+  """,
+  timeout: 300_000
+)
+```
+
+#### escape_keeps_markup_out_of_text (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nescape \"<a href=\\\"x\\\"> & b\" |> _assert_eq \"&lt;a href=&quot;x&quot;&gt; &amp; b\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  escape "<a href=\"x\"> & b" |> _assert_eq "&lt;a href=&quot;x&quot;&gt; &amp; b"
+  """,
+  timeout: 300_000
+)
+```
+
+#### escape_leaves_plain_text_alone (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nescape \"Behind the Scenes\" |> _assert_eq \"Behind the Scenes\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  escape "Behind the Scenes" |> _assert_eq "Behind the Scenes"
+  """,
+  timeout: 300_000
+)
+```

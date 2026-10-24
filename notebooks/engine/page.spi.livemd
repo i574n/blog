@@ -1,0 +1,183 @@
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --package .\nopen sm'_operators","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --package .
+  open sm'_operators
+  """,
+  timeout: 300_000
+)
+```
+
+#### page (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test static\n\nopen testing","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test static
+
+  open testing
+  """,
+  timeout: 300_000
+)
+```
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"union kind =\n    | Article\n    | Release\n\ntype author = { name : string; handle : string }\n\ntype entry =\n    {\n        slug : string\n        title : string\n        date : string\n        kind : kind\n        authors : list author\n        blurb : string\n        blocks : list post.block\n    }\n\ninl kind_label (k : kind) : string =\n    match k with\n    | Article => \"\"\n    | Release => \"Release\"\n\ninl rec join_names (authors : list author) : string =\n    match authors with\n    | Nil => \"\"\n    | Cons (a, Nil) => html.escape a.name\n    | Cons (a, rest) => html.escape a.name ++# \", \" ++# join_names rest\n\ninl rec render_blocks (section : i32) (blocks : list post.block) : string =\n    match blocks with\n    | Nil => \"\"\n    | Cons (post.Heading text, rest) =>\n        \"<h2 id=\\\"section-\" ++#? section ++# \"\\\">\" ++# html.escape text ++# \"</h2>\" ++# render_blocks (section + 1) rest\n    | Cons (b, rest) => post.render_block b ++# render_blocks section rest\n\ninl rec toc_items (section : i32) (blocks : list post.block) : string =\n    match blocks with\n    | Nil => \"\"\n    | Cons (post.Heading text, rest) =>\n        \"<li><a href=\\\"#section-\"\n        ++#? section\n        ++# \"\\\">\"\n        ++# html.escape text\n        ++# \"</a></li>\"\n        ++# toc_items (section + 1) rest\n    | Cons (_, rest) => toc_items section rest\n\ninl table_of_contents (blocks : list post.block) : string =\n    inl items = toc_items 1 blocks\n    if items = \"\" then \"\" else \"<nav class=\\\"toc\\\"><p>On this page</p><ol>\" ++# items ++# \"</ol></nav>\"\n\ninl render_entry (e : entry) : string =\n    \"<article><h1 class=\\\"post-title\\\">\" ++# html.escape e.title ++# \"</h1>\"\n    ++# \"<p class=\\\"byline\\\">\" ++# join_names e.authors ++# \" &middot; \" ++# html.escape e.date ++# \"</p>\"\n    ++# table_of_contents e.blocks ++# render_blocks 1 e.blocks ++# \"</article>\"\n\ninl sample () : entry =\n    {\n        slug = \"sample\"\n        title = \"Sample Entry\"\n        date = \"2026-10-17\"\n        kind = Article\n        authors = Cons ({ name = \"i574n\"; handle = \"i574n\" }, Nil)\n        blurb = \"A fixture for the engine's own tests.\"\n        blocks = Cons (post.Heading \"The Matrix\", Cons (post.Rule, Nil))\n    }","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  union kind =
+      | Article
+      | Release
+
+  type author = { name : string; handle : string }
+
+  type entry =
+      {
+          slug : string
+          title : string
+          date : string
+          kind : kind
+          authors : list author
+          blurb : string
+          blocks : list post.block
+      }
+
+  inl kind_label (k : kind) : string =
+      match k with
+      | Article => ""
+      | Release => "Release"
+
+  inl rec join_names (authors : list author) : string =
+      match authors with
+      | Nil => ""
+      | Cons (a, Nil) => html.escape a.name
+      | Cons (a, rest) => html.escape a.name ++# ", " ++# join_names rest
+
+  inl rec render_blocks (section : i32) (blocks : list post.block) : string =
+      match blocks with
+      | Nil => ""
+      | Cons (post.Heading text, rest) =>
+          "<h2 id=\"section-" ++#? section ++# "\">" ++# html.escape text ++# "</h2>" ++# render_blocks (section + 1) rest
+      | Cons (b, rest) => post.render_block b ++# render_blocks section rest
+
+  inl rec toc_items (section : i32) (blocks : list post.block) : string =
+      match blocks with
+      | Nil => ""
+      | Cons (post.Heading text, rest) =>
+          "<li><a href=\"#section-"
+          ++#? section
+          ++# "\">"
+          ++# html.escape text
+          ++# "</a></li>"
+          ++# toc_items (section + 1) rest
+      | Cons (_, rest) => toc_items section rest
+
+  inl table_of_contents (blocks : list post.block) : string =
+      inl items = toc_items 1 blocks
+      if items = "" then "" else "<nav class=\"toc\"><p>On this page</p><ol>" ++# items ++# "</ol></nav>"
+
+  inl render_entry (e : entry) : string =
+      "<article><h1 class=\"post-title\">" ++# html.escape e.title ++# "</h1>"
+      ++# "<p class=\"byline\">" ++# join_names e.authors ++# " &middot; " ++# html.escape e.date ++# "</p>"
+      ++# table_of_contents e.blocks ++# render_blocks 1 e.blocks ++# "</article>"
+
+  inl sample () : entry =
+      {
+          slug = "sample"
+          title = "Sample Entry"
+          date = "2026-10-17"
+          kind = Article
+          authors = Cons ({ name = "i574n"; handle = "i574n" }, Nil)
+          blurb = "A fixture for the engine's own tests."
+          blocks = Cons (post.Heading "The Matrix", Cons (post.Rule, Nil))
+      }
+  """,
+  timeout: 300_000
+)
+```
+
+#### an_article_has_no_type_label (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nkind_label Article |> _assert_eq \"\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  kind_label Article |> _assert_eq ""
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_byline_lists_authors_and_date (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_entry (sample ()) |> sm'.contains \"<p class=\\\"byline\\\">i574n &middot; 2026-10-17</p>\" |> _assert_eq true","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_entry (sample ()) |> sm'.contains "<p class=\"byline\">i574n &middot; 2026-10-17</p>" |> _assert_eq true
+  """,
+  timeout: 300_000
+)
+```
+
+#### blocks_render_in_order (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_entry (sample ())\n|> sm'.contains \"<h2 id=\\\"section-1\\\">The Matrix</h2><hr class=\\\"section-rule\\\">\"\n|> _assert_eq true","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_entry (sample ())
+  |> sm'.contains "<h2 id=\"section-1\">The Matrix</h2><hr class=\"section-rule\">"
+  |> _assert_eq true
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_table_of_contents_links_every_heading (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\ntable_of_contents (Cons (post.Heading \"A\", Cons (post.Paragraph \"x\", Cons (post.Heading \"B\", Nil))))\n|> _assert_eq (\n       \"<nav class=\\\"toc\\\"><p>On this page</p><ol><li><a href=\\\"#section-1\\\">A</a></li><li><a \"\n       ^^ \"href=\\\"#section-2\\\">B</a></li></ol></nav>\"\n   )","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  table_of_contents (Cons (post.Heading "A", Cons (post.Paragraph "x", Cons (post.Heading "B", Nil))))
+  |> _assert_eq (
+         "<nav class=\"toc\"><p>On this page</p><ol><li><a href=\"#section-1\">A</a></li><li><a "
+         ^^ "href=\"#section-2\">B</a></li></ol></nav>"
+     )
+  """,
+  timeout: 300_000
+)
+```
+
+#### a_post_without_headings_has_no_table_of_contents (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\ntable_of_contents (Cons (post.Paragraph \"x\", Nil)) |> _assert_eq \"\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  table_of_contents (Cons (post.Paragraph "x", Nil)) |> _assert_eq ""
+  """,
+  timeout: 300_000
+)
+```

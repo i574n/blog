@@ -1,0 +1,31 @@
+///- --package .
+open sm'_operators
+open file_system_operators
+
+test build static =
+    open testing
+
+inl rec write_files (root : string) (files : list site.file) : () =
+    match files with
+    | Nil => ()
+    | Cons (f, rest) =>
+        inl target = root </> f.path
+        target
+        |> file_system.directory_get_parent
+        |> optionm'.default_value' root
+        |> file_system.create_dir_all
+        |> resultm.unwrap'
+        f.content |> file_system.write_all_text target
+        write_files root rest
+
+///> rust -d chrono
+test the_site_is_written_as_a_folder_tree =
+    inl root, disposable = file_system.create_temp_dir ()
+    join
+        Cons (page.sample (), Nil) |> site.files |> write_files root
+        root </> "index.html" |> file_system.read_all_text |> sm'.starts_with "<!doctype html>" |> _assert_eq true
+        root </> "sample" </> "index.html"
+        |> file_system.read_all_text
+        |> sm'.contains "<h1 class=\"post-title\">"
+        |> _assert_eq true
+        disposable |> use |> ignore

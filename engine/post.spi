@@ -1,0 +1,71 @@
+///- --package .
+open sm'_operators
+
+test post static =
+    open testing
+
+union block =
+    | Heading : string
+    | Paragraph : string
+    | Code : string * string
+    | Terminal : string * string
+    | Table : list string * list (list string)
+    | Note : string
+    | Rule
+
+inl rec cells (tag : string) (row : list string) : string =
+    match row with
+    | Nil => ""
+    | Cons (cell, rest) => "<" ++# tag ++# ">" ++# html.escape cell ++# "</" ++# tag ++# ">" ++# cells tag rest
+
+inl rec body_rows (rows : list (list string)) : string =
+    match rows with
+    | Nil => ""
+    | Cons (row, rest) => "<tr>" ++# cells "td" row ++# "</tr>" ++# body_rows rest
+
+inl render_block (b : block) : string =
+    match b with
+    | Heading text => "<h2>" ++# html.escape text ++# "</h2>"
+    | Paragraph text => "<p>" ++# html.escape text ++# "</p>"
+    | Code (language, text) =>
+        inl opening = "<pre><code class=\"language-" ++# html.escape language
+        inl closing = "\">"
+        (opening ++# closing) ++# (html.escape text ++# "</code></pre>")
+    | Terminal (command, output) =>
+        "<pre class=\"terminal\"><code><span class=\"prompt\">$ </span>"
+        ++# html.escape command
+        ++# "\n"
+        ++# html.escape output
+        ++# "</code></pre>"
+    | Table (head, rows) =>
+        "<table><thead><tr>" ++# cells "th" head ++# "</tr></thead><tbody>" ++# body_rows rows ++# "</tbody></table>"
+    | Note text => "<aside class=\"note\">" ++# html.escape text ++# "</aside>"
+    | Rule => "<hr class=\"section-rule\">"
+
+test a_heading_is_escaped =
+    render_block (Heading "Async & DNS") |> _assert_eq "<h2>Async &amp; DNS</h2>"
+
+test code_keeps_its_language =
+    render_block (Code ("spiral", "inl x = 1 < 2"))
+    |> _assert_eq "<pre><code class=\"language-spiral\">inl x = 1 &lt; 2</code></pre>"
+
+test a_rule_separates_sections =
+    render_block Rule |> _assert_eq "<hr class=\"section-rule\">"
+
+test a_terminal_block_shows_the_command_and_its_output =
+    render_block (Terminal ("hyperfine 'spiral build'", "Time (mean): 1.2 s"))
+    |> _assert_eq (
+           "<pre class=\"terminal\"><code><span class=\"prompt\">$ </span>hyperfine 'spiral build'\n"
+           ^^ "Time (mean): 1.2 s</code></pre>"
+       )
+
+test a_table_has_a_head_and_escaped_cells =
+    render_block (Table (Cons ("Backend", Cons ("Rows", Nil)), Cons (Cons ("C", Cons ("< 500", Nil)), Nil)))
+    |> _assert_eq (
+           "<table><thead><tr><th>Backend</th><th>Rows</th></tr></thead><tbody><tr><td>C</td><td>&lt; "
+           ^^ "500</td></tr></tbody></table>"
+       )
+
+test a_note_is_an_aside =
+    render_block (Note "Numbers are from one laptop.")
+    |> _assert_eq "<aside class=\"note\">Numbers are from one laptop.</aside>"

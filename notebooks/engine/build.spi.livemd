@@ -1,0 +1,73 @@
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --package .\nopen sm'_operators\nopen file_system_operators","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --package .
+  open sm'_operators
+  open file_system_operators
+  """,
+  timeout: 300_000
+)
+```
+
+#### build (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test static\n\nopen testing","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test static
+
+  open testing
+  """,
+  timeout: 300_000
+)
+```
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"inl rec write_files (root : string) (files : list site.file) : () =\n    match files with\n    | Nil => ()\n    | Cons (f, rest) =>\n        inl target = root </> f.path\n        target\n        |> file_system.directory_get_parent\n        |> optionm'.default_value' root\n        |> file_system.create_dir_all\n        |> resultm.unwrap'\n        f.content |> file_system.write_all_text target\n        write_files root rest","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  inl rec write_files (root : string) (files : list site.file) : () =
+      match files with
+      | Nil => ()
+      | Cons (f, rest) =>
+          inl target = root </> f.path
+          target
+          |> file_system.directory_get_parent
+          |> optionm'.default_value' root
+          |> file_system.create_dir_all
+          |> resultm.unwrap'
+          f.content |> file_system.write_all_text target
+          write_files root rest
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_site_is_written_as_a_folder_tree (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n///> rust -d chrono\n\ninl root, disposable = file_system.create_temp_dir ()\njoin\n    Cons (page.sample (), Nil) |> site.files |> write_files root\n    root </> \"index.html\" |> file_system.read_all_text |> sm'.starts_with \"<!doctype html>\" |> _assert_eq true\n    root </> \"sample\" </> \"index.html\"\n    |> file_system.read_all_text\n    |> sm'.contains \"<h1 class=\\\"post-title\\\">\"\n    |> _assert_eq true\n    disposable |> use |> ignore","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+  ///> rust -d chrono
+
+  inl root, disposable = file_system.create_temp_dir ()
+  join
+      Cons (page.sample (), Nil) |> site.files |> write_files root
+      root </> "index.html" |> file_system.read_all_text |> sm'.starts_with "<!doctype html>" |> _assert_eq true
+      root </> "sample" </> "index.html"
+      |> file_system.read_all_text
+      |> sm'.contains "<h1 class=\"post-title\">"
+      |> _assert_eq true
+      disposable |> use |> ignore
+  """,
+  timeout: 300_000
+)
+```
