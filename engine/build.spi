@@ -1,15 +1,15 @@
 ///- --package .
-open sm'_operators
-open file_system_operators
+:< sm'_operators
+:< file_system_operators
 
 test build static =
-    open testing
+    :< testing
 
-inl rec write_files (root : string) (files : list site.file) : () =
-    match files with
+:= ^ write_files (root : string) (files : list site.file) : () =
+    ?= files ?|
     | Nil => ()
     | Cons (f, rest) =>
-        inl target = root </> f.path
+        := target = root </> f.path
         target
         |> file_system.directory_get_parent
         |> optionm'.default_value' root
@@ -20,12 +20,12 @@ inl rec write_files (root : string) (files : list site.file) : () =
 
 ///> rust -d chrono
 test the_site_is_written_as_a_folder_tree =
-    inl root, disposable = file_system.create_temp_dir ()
-    join
+    := root, disposable = file_system.create_temp_dir ()
+    ~~
         Cons (page.sample (), Nil) |> site.files |> write_files root
-        root </> "index.html" |> file_system.read_all_text |> sm'.starts_with "<!doctype html>" |> _assert_eq true
+        root </> "index.html" |> file_system.read_all_text |> sm'.starts_with "<!doctype html>" |> _assert_eq !+
         root </> "sample" </> "index.html"
         |> file_system.read_all_text
         |> sm'.contains "<h1 class=\"post-title\">"
-        |> _assert_eq true
+        |> _assert_eq !+
         disposable |> use |> ignore

@@ -1,11 +1,11 @@
 ///- --package .
-open sm'_operators
+:< sm'_operators
 
 test rss static =
-    open testing
+    :< testing
 
-inl item (base : string) (e : page.entry) : string =
-    inl link = base ++# "/" ++# html.escape e.slug ++# "/"
+:= item (base : string) (e : page.entry) : string =
+    := link = base ++# "/" ++# html.escape e.slug ++# "/"
     "<item><title>"
     ++# html.escape e.title
     ++# "</title><link>"
@@ -19,12 +19,12 @@ inl item (base : string) (e : page.entry) : string =
     ++# html.escape e.blurb
     ++# "</description></item>"
 
-inl rec items (base : string) (entries : list page.entry) : string =
-    match entries with
+:= ^ items (base : string) (entries : list page.entry) : string =
+    ?= entries ?|
     | Nil => ""
     | Cons (e, rest) => item base e ++# items base rest
 
-inl render_feed (title : string) (base : string) (entries : list page.entry) : string =
+:= render_feed (title : string) (base : string) (entries : list page.entry) : string =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     ++# "<rss version=\"2.0\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><channel>"
     ++# "<title>"
@@ -40,11 +40,11 @@ inl render_feed (title : string) (base : string) (entries : list page.entry) : s
 test the_feed_links_each_post_by_its_slug =
     render_feed "Spiral Blog" "https://i574n.github.io/blog" (Cons (page.sample (), Nil))
     |> sm'.contains "<item><title>Sample Entry</title><link>https://i574n.github.io/blog/sample/</link>"
-    |> _assert_eq true
+    |> _assert_eq !+
 
 test the_feed_is_rss_2_with_dublin_core_dates =
     render_feed "Spiral Blog" "https://i574n.github.io/blog" (Cons (page.sample (), Nil))
-    |> fun feed =>
-           (feed |> sm'.starts_with "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"")
-           && (feed |> sm'.contains "<dc:date>2026-10-17</dc:date>")
-    |> _assert_eq true
+    |> \ feed =>
+        (feed |> sm'.starts_with "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"")
+        && (feed |> sm'.contains "<dc:date>2026-10-17</dc:date>")
+    |> _assert_eq !+

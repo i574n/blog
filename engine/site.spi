@@ -1,12 +1,12 @@
 ///- --package .
-open sm'_operators
+:< sm'_operators
 
 test site static =
-    open testing
+    :< testing
 
-type file = { path : string; content : string }
+:== file = { path : string; content : string }
 
-inl layout (title : string) (body : string) : string =
+:= layout (title : string) (body : string) : string =
     "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
     ++# "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
     ++# "<title>" ++# html.escape title ++# "</title>"
@@ -14,17 +14,17 @@ inl layout (title : string) (body : string) : string =
     ++# "<body><header><a class=\"home\" href=\"/\">Spiral Blog</a></header><main>"
     ++# body ++# "</main></body></html>"
 
-inl entry_file (e : page.entry) : file =
+:= entry_file (e : page.entry) : file =
     { path = e.slug ++# "/index.html"; content = layout e.title (page.render_entry e) }
 
-inl rec entry_files (entries : list page.entry) : list file =
-    match entries with
+:= ^ entry_files (entries : list page.entry) : list file =
+    ?= entries ?|
     | Nil => Nil
     | Cons (e, rest) => Cons (entry_file e, entry_files rest)
 
-inl base_url () : string = "https://i574n.github.io/blog"
+:= base_url () : string = "https://i574n.github.io/blog"
 
-inl files (entries : list page.entry) : list file =
+:= files (entries : list page.entry) : list file =
     Cons (
         { path = "index.html"; content = layout "Spiral Blog" (index.render_index entries) },
         Cons (
@@ -49,8 +49,8 @@ inl files (entries : list page.entry) : list file =
         )
     )
 
-inl rec paths (fs : list file) : string =
-    match fs with
+:= ^ paths (fs : list file) : string =
+    ?= fs ?|
     | Nil => ""
     | Cons (f, Nil) => f.path
     | Cons (f, rest) => f.path ++# " " ++# paths rest
@@ -61,21 +61,21 @@ test the_site_has_an_index_and_one_folder_per_post =
     |> _assert_eq "index.html style.css rss.xml articles/index.html releases/index.html sample/index.html"
 
 test every_page_shares_the_layout =
-    inl rec all_wrapped (fs : list file) : bool =
-        match fs with
-        | Nil => true
-        | Cons (f, rest) when f.path |> sm'.ends_with ".html" =>
+    := ^ all_wrapped (fs : list file) : bool =
+        ?= fs ?|
+        | Nil => !+
+        | Cons (f, rest) ?& f.path |> sm'.ends_with ".html" =>
             (f.content |> sm'.starts_with "<!doctype html>")
             && (f.content |> sm'.ends_with "</main></body></html>")
             && all_wrapped rest
         | Cons (_, rest) => all_wrapped rest
-    files (Cons (page.sample (), Nil)) |> all_wrapped |> _assert_eq true
+    files (Cons (page.sample (), Nil)) |> all_wrapped |> _assert_eq !+
 
 test the_post_page_title_is_escaped_into_the_head =
-    inl e = page.sample ()
-    files (Cons ({ e with title = "A & B" }, Nil))
-    |> fun fs =>
-        match fs with
+    := e = page.sample ()
+    files (Cons ({ e ?| title = "A & B" }, Nil))
+    |> \ fs =>
+        ?= fs ?|
         | Cons (_, Cons (_, Cons (_, Cons (_, Cons (_, Cons (post_file, _)))))) =>
-            post_file.content |> sm'.contains "<title>A &amp; B</title>" |> _assert_eq true
+            post_file.content |> sm'.contains "<title>A &amp; B</title>" |> _assert_eq !+
         | _ => failwith "expected a post file"

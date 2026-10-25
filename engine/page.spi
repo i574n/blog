@@ -1,16 +1,16 @@
 ///- --package .
-open sm'_operators
+:< sm'_operators
 
 test page static =
-    open testing
+    :< testing
 
-union kind =
+:| kind =
     | Article
     | Release
 
-type author = { name : string; handle : string }
+:== author = { name : string; handle : string }
 
-type entry =
+:== entry =
     {
         slug : string
         title : string
@@ -21,26 +21,26 @@ type entry =
         blocks : list post.block
     }
 
-inl kind_label (k : kind) : string =
-    match k with
+:= kind_label (k : kind) : string =
+    ?= k ?|
     | Article => ""
     | Release => "Release"
 
-inl rec join_names (authors : list author) : string =
-    match authors with
+:= ^ join_names (authors : list author) : string =
+    ?= authors ?|
     | Nil => ""
     | Cons (a, Nil) => html.escape a.name
     | Cons (a, rest) => html.escape a.name ++# ", " ++# join_names rest
 
-inl rec render_blocks (section : i32) (blocks : list post.block) : string =
-    match blocks with
+:= ^ render_blocks (section : i32) (blocks : list post.block) : string =
+    ?= blocks ?|
     | Nil => ""
     | Cons (post.Heading text, rest) =>
         "<h2 id=\"section-" ++#? section ++# "\">" ++# html.escape text ++# "</h2>" ++# render_blocks (section + 1) rest
     | Cons (b, rest) => post.render_block b ++# render_blocks section rest
 
-inl rec toc_items (section : i32) (blocks : list post.block) : string =
-    match blocks with
+:= ^ toc_items (section : i32) (blocks : list post.block) : string =
+    ?= blocks ?|
     | Nil => ""
     | Cons (post.Heading text, rest) =>
         "<li><a href=\"#section-"
@@ -51,16 +51,16 @@ inl rec toc_items (section : i32) (blocks : list post.block) : string =
         ++# toc_items (section + 1) rest
     | Cons (_, rest) => toc_items section rest
 
-inl table_of_contents (blocks : list post.block) : string =
-    inl items = toc_items 1 blocks
-    if items = "" then "" else "<nav class=\"toc\"><p>On this page</p><ol>" ++# items ++# "</ol></nav>"
+:= table_of_contents (blocks : list post.block) : string =
+    := items = toc_items 1 blocks
+    ? items = "" ?> "" |: "<nav class=\"toc\"><p>On this page</p><ol>" ++# items ++# "</ol></nav>"
 
-inl render_entry (e : entry) : string =
+:= render_entry (e : entry) : string =
     "<article><h1 class=\"post-title\">" ++# html.escape e.title ++# "</h1>"
     ++# "<p class=\"byline\">" ++# join_names e.authors ++# " &middot; " ++# html.escape e.date ++# "</p>"
     ++# table_of_contents e.blocks ++# render_blocks 1 e.blocks ++# "</article>"
 
-inl sample () : entry =
+:= sample () : entry =
     {
         slug = "sample"
         title = "Sample Entry"
@@ -75,19 +75,19 @@ test an_article_has_no_type_label =
     kind_label Article |> _assert_eq ""
 
 test the_byline_lists_authors_and_date =
-    render_entry (sample ()) |> sm'.contains "<p class=\"byline\">i574n &middot; 2026-10-17</p>" |> _assert_eq true
+    render_entry (sample ()) |> sm'.contains "<p class=\"byline\">i574n &middot; 2026-10-17</p>" |> _assert_eq !+
 
 test blocks_render_in_order =
     render_entry (sample ())
     |> sm'.contains "<h2 id=\"section-1\">The Matrix</h2><hr class=\"section-rule\">"
-    |> _assert_eq true
+    |> _assert_eq !+
 
 test the_table_of_contents_links_every_heading =
     table_of_contents (Cons (post.Heading "A", Cons (post.Paragraph "x", Cons (post.Heading "B", Nil))))
     |> _assert_eq (
-           "<nav class=\"toc\"><p>On this page</p><ol><li><a href=\"#section-1\">A</a></li><li><a "
-           ^^ "href=\"#section-2\">B</a></li></ol></nav>"
-       )
+        "<nav class=\"toc\"><p>On this page</p><ol><li><a href=\"#section-1\">A</a></li><li><a "
+        ^^ "href=\"#section-2\">B</a></li></ol></nav>"
+    )
 
 test a_post_without_headings_has_no_table_of_contents =
     table_of_contents (Cons (post.Paragraph "x", Nil)) |> _assert_eq ""

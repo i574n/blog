@@ -1,9 +1,9 @@
 ///- --package .
 
 test style static =
-    open testing
+    :< testing
 
-inl css () : string =
+:= css () : string =
     """:root { --ink: #1d1b2e; --paper: #faf8f2; --accent: #6b4fd8; --muted: #6f6a80; --rule: #e4dfd2; }
         * { box-sizing: border-box; }
         body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.65 system-ui, sans-serif; }
@@ -31,4 +31,4 @@ inl css () : string =
         """
 
 test the_stylesheet_defines_the_palette =
-    css () |> sm'.starts_with ":root { --ink:" |> _assert_eq true
+    css () |> sm'.starts_with ":root { --ink:" |> _assert_eq !+

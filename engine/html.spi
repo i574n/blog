@@ -1,8 +1,8 @@
 ///- --package .
 test html static =
-    open testing
+    :< testing
 
-inl escape (text : string) : string =
+:= escape (text : string) : string =
     text
     |> sm'.replace "&" "&amp;"
     |> sm'.replace "<" "&lt;"

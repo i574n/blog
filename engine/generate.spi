@@ -1,6 +1,6 @@
 ///- --package .
-open sm'_operators
+:< sm'_operators
 
-inl main () : i32 =
+:= main () : i32 =
     showcase.entries () |> site.files |> build.write_files "dist"
     0i32

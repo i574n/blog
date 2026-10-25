@@ -1,10 +1,10 @@
 ///- --package .
-open sm'_operators
+:< sm'_operators
 
 test showcase static =
-    open testing
+    :< testing
 
-inl article () : page.entry =
+:= article () : page.entry =
     {
         slug = "showcase"
         title = "Every Block, Once"
@@ -38,9 +38,9 @@ inl article () : page.entry =
             ]
     }
 
-inl release () : page.entry =
-    inl a = article ()
-    { a with
+:= release () : page.entry =
+    := a = article ()
+    { a ?|
         slug = "showcase-release"
         title = "Engine Release Notes"
         kind = page.Release
@@ -48,11 +48,11 @@ inl release () : page.entry =
         blocks = [ post.Paragraph "Release entries share the article layout and get a Release label in the index." ]
     }
 
-inl entries () : list page.entry =
+:= entries () : list page.entry =
     [ article (); release () ]
 
-inl block_tag (b : post.block) : string =
-    match b with
+:= block_tag (b : post.block) : string =
+    ?= b ?|
     | post.Heading _ => "heading"
     | post.Paragraph _ => "paragraph"
     | post.Code _ => "code"
@@ -61,23 +61,23 @@ inl block_tag (b : post.block) : string =
     | post.Note _ => "note"
     | post.Rule => "rule"
 
-inl rec tags (blocks : list post.block) : string =
-    match blocks with
+:= ^ tags (blocks : list post.block) : string =
+    ?= blocks ?|
     | Nil => ""
     | Cons (b, rest) => " " ++# block_tag b ++# tags rest
 
-inl rec all_present (present : string) (wanted : list string) : bool =
-    match wanted with
-    | Nil => true
+:= ^ all_present (present : string) (wanted : list string) : bool =
+    ?= wanted ?|
+    | Nil => !+
     | Cons (t, rest) => (present |> sm'.contains (" " ++# t)) && all_present present rest
 
 test every_block_kind_appears =
-    inl a = article ()
+    := a = article ()
     all_present (tags a.blocks) [ "heading"; "paragraph"; "code"; "terminal"; "table"; "note"; "rule" ]
-    |> _assert_eq true
+    |> _assert_eq !+
 
 test the_release_entry_is_labeled =
-    inl r = release ()
+    := r = release ()
     page.kind_label r.kind |> _assert_eq "Release"
 
 test the_showcase_renders_into_the_site =
@@ -85,24 +85,24 @@ test the_showcase_renders_into_the_site =
     |> site.files
     |> site.paths
     |> _assert_eq (
-           "index.html style.css rss.xml articles/index.html releases/index.html showcase/index.html "
-           ^^ "showcase-release/index.html"
-       )
+        "index.html style.css rss.xml articles/index.html releases/index.html showcase/index.html "
+        ^^ "showcase-release/index.html"
+    )
 
 test the_article_has_a_table_of_contents =
-    inl a = article ()
+    := a = article ()
     a.blocks
     |> page.table_of_contents
     |> sm'.contains "<p>On this page</p>"
-    |> _assert_eq true
+    |> _assert_eq !+
 
 test the_feed_links_both_showcase_entries =
-    inl feed = rss.render_feed "Spiral Blog" "https://i574n.github.io/blog" (entries ())
-    inl article_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase/</link>"
-    inl release_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase-release/</link>"
-    (article_linked, release_linked) |> _assert_eq (true, true)
+    := feed = rss.render_feed "Spiral Blog" "https://i574n.github.io/blog" (entries ())
+    := article_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase/</link>"
+    := release_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase-release/</link>"
+    (article_linked, release_linked) |> _assert_eq (!+, !+)
 
 test each_tab_keeps_one_showcase_entry =
-    inl articles = entries () |> index.only page.Article |> listm.length
-    inl releases = entries () |> index.only page.Release |> listm.length
+    := articles = entries () |> index.only page.Article |> listm.length
+    := releases = entries () |> index.only page.Release |> listm.length
     (articles, releases) |> _assert_eq (1i32, 1i32)
