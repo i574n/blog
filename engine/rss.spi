@@ -1,4 +1,4 @@
-///- --package .
+///- --package ..
 :< sm'_operators
 
 test rss static =

@@ -1,5 +1,6 @@
-///- --package .
+///- --package ..
 :< sm'_operators
+:< engine
 
 test showcase static =
     :< testing

@@ -5,12 +5,12 @@ edition = "2024"
 publish = false
 
 [package.metadata.spiral]
-entry = "../engine/generate.spi"
-output = "../engine/generate.rs"
+entry = "../app/generate.spi"
+output = "../app/generate.rs"
 
 [[bin]]
 name = "blog-generate"
-path = "../engine/generate.rs"
+path = "../app/generate.rs"
 
 [dependencies]
 chrono = "0.4"

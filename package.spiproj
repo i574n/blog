@@ -1,0 +1,18 @@
+packageDir: ../spiral/lib
+packages:
+    |core-
+    spiral-
+modules:
+    engine/
+        html
+        post
+        page
+        index
+        rss
+        style
+        site
+        build
+    posts/
+        showcase
+    app/
+        generate

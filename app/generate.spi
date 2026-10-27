@@ -1,5 +1,7 @@
-///- --package .
+///- --package ..
 :< sm'_operators
+:< engine
+:< posts
 
 := main () : i32 =
     showcase.entries () |> site.files |> build.write_files "dist"

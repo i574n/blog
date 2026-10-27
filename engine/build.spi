@@ -1,4 +1,4 @@
-///- --package .
+///- --package ..
 :< sm'_operators
 :< file_system_operators
 

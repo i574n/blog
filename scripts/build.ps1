@@ -3,6 +3,5 @@ $ErrorActionPreference = "Stop"
 Assert-SpiralBeside
 . (Join-Path $SpiralRoot 'scripts/core.ps1')
 
-$engine = Join-Path $BlogRoot 'engine'
-Invoke-SpiralTests $engine @('html', 'post', 'page', 'index', 'rss', 'style', 'site', 'showcase', 'build')
+Invoke-SpiralTests $BlogRoot @('engine/html', 'engine/post', 'engine/page', 'engine/index', 'engine/rss', 'engine/style', 'engine/site', 'posts/showcase', 'engine/build')
 Write-Output "BLOG-OK blog/engine"
