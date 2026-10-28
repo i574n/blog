@@ -1,5 +1,6 @@
 ///- --package ..
 :< sm'_operators
+:< engine
 
 test post static =
     :< testing
@@ -15,13 +16,13 @@ test post static =
 
 := ^ cells (tag : string) (row : list string) : string =
     ?= row ?|
-    | Nil => ""
-    | Cons (cell, rest) => "<" ++# tag ++# ">" ++# html.escape cell ++# "</" ++# tag ++# ">" ++# cells tag rest
+    | [] => ""
+    | cell :: rest => "<" ++# tag ++# ">" ++# html.escape cell ++# "</" ++# tag ++# ">" ++# cells tag rest
 
 := ^ body_rows (rows : list (list string)) : string =
     ?= rows ?|
-    | Nil => ""
-    | Cons (row, rest) => "<tr>" ++# cells "td" row ++# "</tr>" ++# body_rows rest
+    | [] => ""
+    | row :: rest => "<tr>" ++# cells "td" row ++# "</tr>" ++# body_rows rest
 
 := render_block (b : block) : string =
     ?= b ?|
@@ -60,7 +61,7 @@ test a_terminal_block_shows_the_command_and_its_output =
     )
 
 test a_table_has_a_head_and_escaped_cells =
-    render_block (Table (Cons ("Backend", Cons ("Rows", Nil)), Cons (Cons ("C", Cons ("< 500", Nil)), Nil)))
+    render_block (Table ([ "Backend"; "Rows" ], [ [ "C"; "< 500" ] ]))
     |> _assert_eq (
         "<table><thead><tr><th>Backend</th><th>Rows</th></tr></thead><tbody><tr><td>C</td><td>&lt; "
         ^^ "500</td></tr></tbody></table>"

@@ -64,13 +64,13 @@ test showcase static =
 
 := ^ tags (blocks : list post.block) : string =
     ?= blocks ?|
-    | Nil => ""
-    | Cons (b, rest) => " " ++# block_tag b ++# tags rest
+    | [] => ""
+    | b :: rest => " " ++# block_tag b ++# tags rest
 
 := ^ all_present (present : string) (wanted : list string) : bool =
     ?= wanted ?|
-    | Nil => !+
-    | Cons (t, rest) => (present |> sm'.contains (" " ++# t)) && all_present present rest
+    | [] => !+
+    | t :: rest => (present |> sm'.contains (" " ++# t)) && all_present present rest
 
 test every_block_kind_appears =
     := a = article ()

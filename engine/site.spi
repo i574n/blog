@@ -1,5 +1,6 @@
 ///- --package ..
 :< sm'_operators
+:< engine
 
 test site static =
     :< testing
@@ -19,63 +20,54 @@ test site static =
 
 := ^ entry_files (entries : list page.entry) : list file =
     ?= entries ?|
-    | Nil => Nil
-    | Cons (e, rest) => Cons (entry_file e, entry_files rest)
+    | [] => []
+    | e :: rest => entry_file e :: entry_files rest
 
 := base_url () : string = "https://i574n.github.io/blog"
 
 := files (entries : list page.entry) : list file =
-    Cons (
-        { path = "index.html"; content = layout "Spiral Blog" (index.render_index entries) },
-        Cons (
-            { path = "style.css"; content = style.css () },
-            Cons (
-                { path = "rss.xml"; content = rss.render_feed "Spiral Blog" (base_url ()) entries },
-                Cons (
-                    {
-                        path = "articles/index.html"
-                        content = layout "Articles - Spiral Blog" (index.render_index (index.only page.Article entries))
-                    },
-                    Cons (
-                        {
-                            path = "releases/index.html"
-                            content =
-                                layout "Releases - Spiral Blog" (index.render_index (index.only page.Release entries))
-                        },
-                        entry_files entries
-                    )
-                )
-            )
-        )
-    )
+    := index_page = { path = "index.html"; content = layout "Spiral Blog" (index.render_index entries) }
+    := stylesheet = { path = "style.css"; content = style.css () }
+    := feed = { path = "rss.xml"; content = rss.render_feed "Spiral Blog" (base_url ()) entries }
+    := articles_page =
+        {
+            path = "articles/index.html"
+            content = layout "Articles - Spiral Blog" (index.render_index (index.only page.Article entries))
+        }
+    := releases_page =
+        {
+            path = "releases/index.html"
+            content = layout "Releases - Spiral Blog" (index.render_index (index.only page.Release entries))
+        }
+    index_page :: stylesheet :: feed :: articles_page :: releases_page :: entry_files entries
 
 := ^ paths (fs : list file) : string =
     ?= fs ?|
-    | Nil => ""
-    | Cons (f, Nil) => f.path
-    | Cons (f, rest) => f.path ++# " " ++# paths rest
+    | [] => ""
+    | [ f ] => f.path
+    | f :: rest => f.path ++# " " ++# paths rest
 
 test the_site_has_an_index_and_one_folder_per_post =
-    files (Cons (page.sample (), Nil))
+    files [ page.sample () ]
     |> paths
     |> _assert_eq "index.html style.css rss.xml articles/index.html releases/index.html sample/index.html"
 
 test every_page_shares_the_layout =
     := ^ all_wrapped (fs : list file) : bool =
         ?= fs ?|
-        | Nil => !+
-        | Cons (f, rest) ?& f.path |> sm'.ends_with ".html" =>
+        | [] => !+
+        | f :: rest ?& f.path |> sm'.ends_with ".html" =>
             (f.content |> sm'.starts_with "<!doctype html>")
             && (f.content |> sm'.ends_with "</main></body></html>")
             && all_wrapped rest
-        | Cons (_, rest) => all_wrapped rest
-    files (Cons (page.sample (), Nil)) |> all_wrapped |> _assert_eq !+
+        | _ :: rest => all_wrapped rest
+    files [ page.sample () ] |> all_wrapped |> _assert_eq !+
 
 test the_post_page_title_is_escaped_into_the_head =
     := e = page.sample ()
-    files (Cons ({ e ?| title = "A & B" }, Nil))
+    files [ { e ?| title = "A & B" } ]
     |> \ fs =>
         ?= fs ?|
-        | Cons (_, Cons (_, Cons (_, Cons (_, Cons (_, Cons (post_file, _)))))) =>
+        | _ :: _ :: _ :: _ :: _ :: post_file :: _ =>
             post_file.content |> sm'.contains "<title>A &amp; B</title>" |> _assert_eq !+
         | _ => failwith "expected a post file"

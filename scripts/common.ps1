@@ -18,12 +18,18 @@ function Invoke-SpiralTests([Parameter(Mandatory)] [string] $PackageDir, [Parame
     New-Item -ItemType Directory -Force $notebooks | Out-Null
     $saved = $env:SPIRAL_CELLS_COMPILER, $env:SPIRAL_CELLS_WARM
     $env:SPIRAL_CELLS_COMPILER, $env:SPIRAL_CELLS_WARM = 'process', '0'
+    $failed = [Collections.Generic.List[string]]::new()
     try {
         foreach ($module in $Modules) {
             $runner = Join-Path $SpiralRoot 'apps/cells/spi/run_notebook.ps1'
-            { pwsh -NoProfile -File $runner --path (Join-Path $PackageDir "$module.spi") --output-path (Join-Path $notebooks "$($module -replace '/', '_').spi.ipynb") --no-html --livemd } | Invoke-Block
+            $ok = $true
+            try { { pwsh -NoProfile -File $runner --path (Join-Path $PackageDir "$module.spi") --output-path (Join-Path $notebooks "$($module -replace '/', '_').spi.ipynb") --no-html --livemd } | Invoke-Block } catch { $ok = $false }
+            if ($LASTEXITCODE) { $ok = $false }
+            Write-Output "notebook $module $(if ($ok) { 'passed' } else { 'FAILED' })"
+            if (-not $ok) { $failed.Add($module) }
         }
     } finally {
         $env:SPIRAL_CELLS_COMPILER, $env:SPIRAL_CELLS_WARM = $saved
     }
+    if ($failed.Count) { throw "$($failed.Count) of $($Modules.Count) notebooks failed: $($failed -join ', ')" }
 }

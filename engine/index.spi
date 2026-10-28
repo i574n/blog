@@ -1,5 +1,6 @@
 ///- --package ..
 :< sm'_operators
+:< engine
 
 test index static =
     :< testing
@@ -14,8 +15,8 @@ test index static =
 
 := ^ rows (current : string) (entries : list page.entry) : string =
     ?= entries ?|
-    | Nil => ? current = "" ?> "" |: "</ul>"
-    | Cons (e, rest) =>
+    | [] => ? current = "" ?> "" |: "</ul>"
+    | e :: rest =>
         := year = year_of e
         ? year = current ?> entry_row e ++# rows current rest
         |:
@@ -24,13 +25,13 @@ test index static =
 
 := featured (entries : list page.entry) : string =
     ?= entries ?|
-    | Nil => ""
-    | Cons (e, _) => "<section class=\"featured\"><span class=\"badge\">Latest</span>" ++# entry_row e ++# "</section>"
+    | [] => ""
+    | e :: _ => "<section class=\"featured\"><span class=\"badge\">Latest</span>" ++# entry_row e ++# "</section>"
 
 := ^ only (kind : page.kind) (entries : list page.entry) : list page.entry =
     ?= entries ?|
-    | Nil => Nil
-    | Cons (e, rest) => ? e.kind = kind ?> Cons (e, only kind rest) |: only kind rest
+    | [] => []
+    | e :: rest => ? e.kind = kind ?> e :: only kind rest |: only kind rest
 
 := render_index (entries : list page.entry) : string =
     (
@@ -44,12 +45,12 @@ test the_year_comes_from_the_date =
     year_of (page.sample ()) |> _assert_eq "2026"
 
 test the_index_features_the_latest_post =
-    render_index (Cons (page.sample (), Nil)) |> sm'.contains "<span class=\"badge\">Latest</span>" |> _assert_eq !+
+    render_index [ page.sample () ] |> sm'.contains "<span class=\"badge\">Latest</span>" |> _assert_eq !+
 
 test posts_are_grouped_under_their_year =
-    render_index (Cons (page.sample (), Nil)) |> sm'.contains "<h2 class=\"year\">2026</h2><ul>" |> _assert_eq !+
+    render_index [ page.sample () ] |> sm'.contains "<h2 class=\"year\">2026</h2><ul>" |> _assert_eq !+
 
 test a_tab_keeps_only_its_kind =
     := article = page.sample ()
     := release = { article ?| slug = "v3"; kind = page.Release }
-    Cons (article, Cons (release, Nil)) |> only page.Release |> listm.length |> _assert_eq 1i32
+    [ article; release ] |> only page.Release |> listm.length |> _assert_eq 1i32

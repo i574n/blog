@@ -1,5 +1,6 @@
 ///- --package ..
 :< sm'_operators
+:< engine
 :< file_system_operators
 
 test build static =
@@ -7,8 +8,8 @@ test build static =
 
 := ^ write_files (root : string) (files : list site.file) : () =
     ?= files ?|
-    | Nil => ()
-    | Cons (f, rest) =>
+    | [] => ()
+    | f :: rest =>
         := target = root </> f.path
         target
         |> file_system.directory_get_parent
@@ -22,7 +23,7 @@ test build static =
 test the_site_is_written_as_a_folder_tree =
     := root, disposable = file_system.create_temp_dir ()
     ~~
-        Cons (page.sample (), Nil) |> site.files |> write_files root
+        [ page.sample () ] |> site.files |> write_files root
         root </> "index.html" |> file_system.read_all_text |> sm'.starts_with "<!doctype html>" |> _assert_eq !+
         root </> "sample" </> "index.html"
         |> file_system.read_all_text

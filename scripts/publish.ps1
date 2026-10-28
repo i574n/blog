@@ -6,6 +6,7 @@ Assert-SpiralBeside
 { pwsh (Join-Path $SpiralRoot 'scripts/publish-tree.ps1') -Root $BlogRoot } | Invoke-Block
 Move-Item (Join-Path $BlogRoot 'dist/index.html') (Join-Path $BlogRoot 'dist/tree.html') -Force
 { pwsh (Join-Path $PSScriptRoot 'generate.ps1') } | Invoke-Block
+{ pwsh (Join-Path $PSScriptRoot 'e2e.ps1') } | Invoke-Block
 
 $built = Join-Path $BlogRoot 'target/build'
 foreach ($package in @(Get-ChildItem $built -Directory -ErrorAction Ignore)) {

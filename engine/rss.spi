@@ -1,5 +1,6 @@
 ///- --package ..
 :< sm'_operators
+:< engine
 
 test rss static =
     :< testing
@@ -21,8 +22,8 @@ test rss static =
 
 := ^ items (base : string) (entries : list page.entry) : string =
     ?= entries ?|
-    | Nil => ""
-    | Cons (e, rest) => item base e ++# items base rest
+    | [] => ""
+    | e :: rest => item base e ++# items base rest
 
 := render_feed (title : string) (base : string) (entries : list page.entry) : string =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -38,12 +39,12 @@ test rss static =
     ++# "</channel></rss>"
 
 test the_feed_links_each_post_by_its_slug =
-    render_feed "Spiral Blog" "https://i574n.github.io/blog" (Cons (page.sample (), Nil))
+    render_feed "Spiral Blog" "https://i574n.github.io/blog" [ page.sample () ]
     |> sm'.contains "<item><title>Sample Entry</title><link>https://i574n.github.io/blog/sample/</link>"
     |> _assert_eq !+
 
 test the_feed_is_rss_2_with_dublin_core_dates =
-    render_feed "Spiral Blog" "https://i574n.github.io/blog" (Cons (page.sample (), Nil))
+    render_feed "Spiral Blog" "https://i574n.github.io/blog" [ page.sample () ]
     |> \ feed =>
         (feed |> sm'.starts_with "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"")
         && (feed |> sm'.contains "<dc:date>2026-10-17</dc:date>")

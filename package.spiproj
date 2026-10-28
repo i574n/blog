@@ -5,12 +5,17 @@ packages:
 modules:
     engine/
         html
+        style
+    engine/
         post
+    engine/
         page
+    engine/
         index
         rss
-        style
+    engine/
         site
+    engine/
         build
     posts/
         showcase
