@@ -1,0 +1,16 @@
+///- --package ..
+test html static =
+    :< testing
+
+:= escape (text : string) : string =
+    text
+    |> sm'.replace "&" "&amp;"
+    |> sm'.replace "<" "&lt;"
+    |> sm'.replace ">" "&gt;"
+    |> sm'.replace "\"" "&quot;"
+
+test escape_keeps_markup_out_of_text =
+    escape "<a href=\"x\"> & b" |> _assert_eq "&lt;a href=&quot;x&quot;&gt; &amp; b"
+
+test escape_leaves_plain_text_alone =
+    escape "Behind the Scenes" |> _assert_eq "Behind the Scenes"

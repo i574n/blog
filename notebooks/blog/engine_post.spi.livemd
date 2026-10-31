@@ -1,0 +1,174 @@
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --package ..\n:< sm'_operators\n:< engine","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --package ..
+  :< sm'_operators
+  :< engine
+  """,
+  timeout: 300_000
+)
+```
+
+#### post (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test static\n\n:< testing","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test static
+
+  :< testing
+  """,
+  timeout: 300_000
+)
+```
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":":| block =\n    | Heading : string\n    | Paragraph : string\n    | Code : string * string\n    | Terminal : string * string\n    | Table : list string * list (list string)\n    | Note : string\n    | Rule\n\n:= ^ cells (tag : string) (row : list string) : string =\n    ?= row ?|\n    | [] => \"\"\n    | cell :: rest => \"<\" ++# tag ++# \">\" ++# html.escape cell ++# \"</\" ++# tag ++# \">\" ++# cells tag rest\n\n:= ^ body_rows (rows : list (list string)) : string =\n    ?= rows ?|\n    | [] => \"\"\n    | row :: rest => \"<tr>\" ++# cells \"td\" row ++# \"</tr>\" ++# body_rows rest\n\n:= render_block (b : block) : string =\n    ?= b ?|\n    | Heading text => \"<h2>\" ++# html.escape text ++# \"</h2>\"\n    | Paragraph text => \"<p>\" ++# html.escape text ++# \"</p>\"\n    | Code (language, text) =>\n        := opening = \"<pre><code class=\\\"language-\" ++# html.escape language\n        := closing = \"\\\">\"\n        (opening ++# closing) ++# (html.escape text ++# \"</code></pre>\")\n    | Terminal (command, output) =>\n        \"<pre class=\\\"terminal\\\"><code><span class=\\\"prompt\\\">$ </span>\"\n        ++# html.escape command\n        ++# \"\\n\"\n        ++# html.escape output\n        ++# \"</code></pre>\"\n    | Table (head, rows) =>\n        \"<table><thead><tr>\" ++# cells \"th\" head ++# \"</tr></thead><tbody>\" ++# body_rows rows ++# \"</tbody></table>\"\n    | Note text => \"<aside class=\\\"note\\\">\" ++# html.escape text ++# \"</aside>\"\n    | Rule => \"<hr class=\\\"section-rule\\\">\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  :| block =
+      | Heading : string
+      | Paragraph : string
+      | Code : string * string
+      | Terminal : string * string
+      | Table : list string * list (list string)
+      | Note : string
+      | Rule
+
+  := ^ cells (tag : string) (row : list string) : string =
+      ?= row ?|
+      | [] => ""
+      | cell :: rest => "<" ++# tag ++# ">" ++# html.escape cell ++# "</" ++# tag ++# ">" ++# cells tag rest
+
+  := ^ body_rows (rows : list (list string)) : string =
+      ?= rows ?|
+      | [] => ""
+      | row :: rest => "<tr>" ++# cells "td" row ++# "</tr>" ++# body_rows rest
+
+  := render_block (b : block) : string =
+      ?= b ?|
+      | Heading text => "<h2>" ++# html.escape text ++# "</h2>"
+      | Paragraph text => "<p>" ++# html.escape text ++# "</p>"
+      | Code (language, text) =>
+          := opening = "<pre><code class=\"language-" ++# html.escape language
+          := closing = "\">"
+          (opening ++# closing) ++# (html.escape text ++# "</code></pre>")
+      | Terminal (command, output) =>
+          "<pre class=\"terminal\"><code><span class=\"prompt\">$ </span>"
+          ++# html.escape command
+          ++# "\n"
+          ++# html.escape output
+          ++# "</code></pre>"
+      | Table (head, rows) =>
+          "<table><thead><tr>" ++# cells "th" head ++# "</tr></thead><tbody>" ++# body_rows rows ++# "</tbody></table>"
+      | Note text => "<aside class=\"note\">" ++# html.escape text ++# "</aside>"
+      | Rule => "<hr class=\"section-rule\">"
+  """,
+  timeout: 300_000
+)
+```
+
+#### a_heading_is_escaped (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_block (Heading \"Async & DNS\") |> _assert_eq \"<h2>Async &amp; DNS</h2>\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_block (Heading "Async & DNS") |> _assert_eq "<h2>Async &amp; DNS</h2>"
+  """,
+  timeout: 300_000
+)
+```
+
+#### code_keeps_its_language (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_block (Code (\"spiral\", \"inl x = 1 < 2\"))\n|> _assert_eq \"<pre><code class=\\\"language-spiral\\\">inl x = 1 &lt; 2</code></pre>\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_block (Code ("spiral", "inl x = 1 < 2"))
+  |> _assert_eq "<pre><code class=\"language-spiral\">inl x = 1 &lt; 2</code></pre>"
+  """,
+  timeout: 300_000
+)
+```
+
+#### a_rule_separates_sections (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_block Rule |> _assert_eq \"<hr class=\\\"section-rule\\\">\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_block Rule |> _assert_eq "<hr class=\"section-rule\">"
+  """,
+  timeout: 300_000
+)
+```
+
+#### a_terminal_block_shows_the_command_and_its_output (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_block (Terminal (\"hyperfine 'spiral build'\", \"Time (mean): 1.2 s\"))\n|> _assert_eq (\n    \"<pre class=\\\"terminal\\\"><code><span class=\\\"prompt\\\">$ </span>hyperfine 'spiral build'\\n\"\n    ^^ \"Time (mean): 1.2 s</code></pre>\"\n)","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_block (Terminal ("hyperfine 'spiral build'", "Time (mean): 1.2 s"))
+  |> _assert_eq (
+      "<pre class=\"terminal\"><code><span class=\"prompt\">$ </span>hyperfine 'spiral build'\n"
+      ^^ "Time (mean): 1.2 s</code></pre>"
+  )
+  """,
+  timeout: 300_000
+)
+```
+
+#### a_table_has_a_head_and_escaped_cells (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_block (Table ([ \"Backend\"; \"Rows\" ], [ [ \"C\"; \"< 500\" ] ]))\n|> _assert_eq (\n    \"<table><thead><tr><th>Backend</th><th>Rows</th></tr></thead><tbody><tr><td>C</td><td>&lt; \"\n    ^^ \"500</td></tr></tbody></table>\"\n)","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_block (Table ([ "Backend"; "Rows" ], [ [ "C"; "< 500" ] ]))
+  |> _assert_eq (
+      "<table><thead><tr><th>Backend</th><th>Rows</th></tr></thead><tbody><tr><td>C</td><td>&lt; "
+      ^^ "500</td></tr></tbody></table>"
+  )
+  """,
+  timeout: 300_000
+)
+```
+
+#### a_note_is_an_aside (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_block (Note \"Numbers are from one laptop.\")\n|> _assert_eq \"<aside class=\\\"note\\\">Numbers are from one laptop.</aside>\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_block (Note "Numbers are from one laptop.")
+  |> _assert_eq "<aside class=\"note\">Numbers are from one laptop.</aside>"
+  """,
+  timeout: 300_000
+)
+```

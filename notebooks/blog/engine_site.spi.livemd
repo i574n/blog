@@ -1,0 +1,139 @@
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --package ..\n:< sm'_operators\n:< engine","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --package ..
+  :< sm'_operators
+  :< engine
+  """,
+  timeout: 300_000
+)
+```
+
+#### site (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test static\n\n:< testing","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test static
+
+  :< testing
+  """,
+  timeout: 300_000
+)
+```
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":":== file = { path : string; content : string }\n\n:= layout (title : string) (body : string) : string =\n    \"<!doctype html><html lang=\\\"en\\\"><head><meta charset=\\\"utf-8\\\">\"\n    ++# \"<meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\">\"\n    ++# \"<title>\" ++# html.escape title ++# \"</title>\"\n    ++# \"<link rel=\\\"stylesheet\\\" href=\\\"/style.css\\\"></head>\"\n    ++# \"<body><header><a class=\\\"home\\\" href=\\\"/\\\">Spiral Blog</a></header><main>\"\n    ++# body ++# \"</main></body></html>\"\n\n:= entry_file (e : page.entry) : file =\n    { path = e.slug ++# \"/index.html\"; content = layout e.title (page.render_entry e) }\n\n:= ^ entry_files (entries : list page.entry) : list file =\n    ?= entries ?|\n    | [] => []\n    | e :: rest => entry_file e :: entry_files rest\n\n:= base_url () : string = \"https://i574n.github.io/blog\"\n\n:= files (entries : list page.entry) : list file =\n    := index_page = { path = \"index.html\"; content = layout \"Spiral Blog\" (index.render_index entries) }\n    := stylesheet = { path = \"style.css\"; content = style.css () }\n    := feed = { path = \"rss.xml\"; content = rss.render_feed \"Spiral Blog\" (base_url ()) entries }\n    := articles_page =\n        {\n            path = \"articles/index.html\"\n            content = layout \"Articles - Spiral Blog\" (index.render_index (index.only page.Article entries))\n        }\n    := releases_page =\n        {\n            path = \"releases/index.html\"\n            content = layout \"Releases - Spiral Blog\" (index.render_index (index.only page.Release entries))\n        }\n    index_page :: stylesheet :: feed :: articles_page :: releases_page :: entry_files entries\n\n:= ^ paths (fs : list file) : string =\n    ?= fs ?|\n    | [] => \"\"\n    | [ f ] => f.path\n    | f :: rest => f.path ++# \" \" ++# paths rest","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  :== file = { path : string; content : string }
+
+  := layout (title : string) (body : string) : string =
+      "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
+      ++# "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+      ++# "<title>" ++# html.escape title ++# "</title>"
+      ++# "<link rel=\"stylesheet\" href=\"/style.css\"></head>"
+      ++# "<body><header><a class=\"home\" href=\"/\">Spiral Blog</a></header><main>"
+      ++# body ++# "</main></body></html>"
+
+  := entry_file (e : page.entry) : file =
+      { path = e.slug ++# "/index.html"; content = layout e.title (page.render_entry e) }
+
+  := ^ entry_files (entries : list page.entry) : list file =
+      ?= entries ?|
+      | [] => []
+      | e :: rest => entry_file e :: entry_files rest
+
+  := base_url () : string = "https://i574n.github.io/blog"
+
+  := files (entries : list page.entry) : list file =
+      := index_page = { path = "index.html"; content = layout "Spiral Blog" (index.render_index entries) }
+      := stylesheet = { path = "style.css"; content = style.css () }
+      := feed = { path = "rss.xml"; content = rss.render_feed "Spiral Blog" (base_url ()) entries }
+      := articles_page =
+          {
+              path = "articles/index.html"
+              content = layout "Articles - Spiral Blog" (index.render_index (index.only page.Article entries))
+          }
+      := releases_page =
+          {
+              path = "releases/index.html"
+              content = layout "Releases - Spiral Blog" (index.render_index (index.only page.Release entries))
+          }
+      index_page :: stylesheet :: feed :: articles_page :: releases_page :: entry_files entries
+
+  := ^ paths (fs : list file) : string =
+      ?= fs ?|
+      | [] => ""
+      | [ f ] => f.path
+      | f :: rest => f.path ++# " " ++# paths rest
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_site_has_an_index_and_one_folder_per_post (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nfiles [ page.sample () ]\n|> paths\n|> _assert_eq \"index.html style.css rss.xml articles/index.html releases/index.html sample/index.html\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  files [ page.sample () ]
+  |> paths
+  |> _assert_eq "index.html style.css rss.xml articles/index.html releases/index.html sample/index.html"
+  """,
+  timeout: 300_000
+)
+```
+
+#### every_page_shares_the_layout (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\n:= ^ all_wrapped (fs : list file) : bool =\n    ?= fs ?|\n    | [] => !+\n    | f :: rest ?& f.path |> sm'.ends_with \".html\" =>\n        (f.content |> sm'.starts_with \"<!doctype html>\")\n        && (f.content |> sm'.ends_with \"</main></body></html>\")\n        && all_wrapped rest\n    | _ :: rest => all_wrapped rest\nfiles [ page.sample () ] |> all_wrapped |> _assert_eq !+","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  := ^ all_wrapped (fs : list file) : bool =
+      ?= fs ?|
+      | [] => !+
+      | f :: rest ?& f.path |> sm'.ends_with ".html" =>
+          (f.content |> sm'.starts_with "<!doctype html>")
+          && (f.content |> sm'.ends_with "</main></body></html>")
+          && all_wrapped rest
+      | _ :: rest => all_wrapped rest
+  files [ page.sample () ] |> all_wrapped |> _assert_eq !+
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_post_page_title_is_escaped_into_the_head (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\n:= e = page.sample ()\nfiles [ { e ?| title = \"A & B\" } ]\n|> \\ fs =>\n    ?= fs ?|\n    | _ :: _ :: _ :: _ :: _ :: post_file :: _ =>\n        post_file.content |> sm'.contains \"<title>A &amp; B</title>\" |> _assert_eq !+\n    | _ => failwith \"expected a post file\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  := e = page.sample ()
+  files [ { e ?| title = "A & B" } ]
+  |> \ fs =>
+      ?= fs ?|
+      | _ :: _ :: _ :: _ :: _ :: post_file :: _ =>
+          post_file.content |> sm'.contains "<title>A &amp; B</title>" |> _assert_eq !+
+      | _ => failwith "expected a post file"
+  """,
+  timeout: 300_000
+)
+```

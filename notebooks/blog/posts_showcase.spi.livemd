@@ -1,0 +1,211 @@
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --package ..\n:< sm'_operators\n:< engine","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --package ..
+  :< sm'_operators
+  :< engine
+  """,
+  timeout: 300_000
+)
+```
+
+#### showcase (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test static\n\n:< testing","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test static
+
+  :< testing
+  """,
+  timeout: 300_000
+)
+```
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":":= article () : page.entry =\n    {\n        slug = \"showcase\"\n        title = \"Every Block, Once\"\n        date = \"2026-10-18\"\n        kind = page.Article\n        authors = [ { name = \"i574n\"; handle = \"i574n\" } ]\n        blurb = \"A sample post that renders every block the blog engine has.\"\n        blocks =\n            [\n                post.Paragraph (\n                    \"This post exercises the engine: every block kind appears at least once, and a test fails when \"\n                    ^^ \"one is missing.\"\n                )\n                post.Heading \"Text\"\n                post.Paragraph \"Paragraphs escape their text, so <tags> & ampersands print as written.\"\n                post.Note \"A note renders as an aside.\"\n                post.Heading \"Code\"\n                post.Code (\"spiral\", \"inl twice f x = f (f x)\\ntwice ((+) 1i32) 40i32\")\n                post.Terminal (\"pwsh scripts/build.ps1\", \"BLOG-OK blog/engine\")\n                post.Heading \"Data\"\n                post.Table (\n                    [ \"Block\"; \"Renders as\" ],\n                    [\n                        [ \"Heading\"; \"an h2 with a section anchor and a table of contents entry\" ]\n                        [ \"Table\"; \"a table with a head row and escaped cells\" ]\n                    ]\n                )\n                post.Rule\n                post.Heading \"Conclusion\"\n                post.Paragraph \"Real posts live in the repositories they describe; this one only shows the machinery.\"\n            ]\n    }\n\n:= release () : page.entry =\n    := a = article ()\n    { a ?|\n        slug = \"showcase-release\"\n        title = \"Engine Release Notes\"\n        kind = page.Release\n        blurb = \"A sample release entry, so the Releases tab has content.\"\n        blocks = [ post.Paragraph \"Release entries share the article layout and get a Release label in the index.\" ]\n    }\n\n:= entries () : list page.entry =\n    [ article (); release () ]\n\n:= block_tag (b : post.block) : string =\n    ?= b ?|\n    | post.Heading _ => \"heading\"\n    | post.Paragraph _ => \"paragraph\"\n    | post.Code _ => \"code\"\n    | post.Terminal _ => \"terminal\"\n    | post.Table _ => \"table\"\n    | post.Note _ => \"note\"\n    | post.Rule => \"rule\"\n\n:= ^ tags (blocks : list post.block) : string =\n    ?= blocks ?|\n    | [] => \"\"\n    | b :: rest => \" \" ++# block_tag b ++# tags rest\n\n:= ^ all_present (present : string) (wanted : list string) : bool =\n    ?= wanted ?|\n    | [] => !+\n    | t :: rest => (present |> sm'.contains (\" \" ++# t)) && all_present present rest","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  := article () : page.entry =
+      {
+          slug = "showcase"
+          title = "Every Block, Once"
+          date = "2026-10-18"
+          kind = page.Article
+          authors = [ { name = "i574n"; handle = "i574n" } ]
+          blurb = "A sample post that renders every block the blog engine has."
+          blocks =
+              [
+                  post.Paragraph (
+                      "This post exercises the engine: every block kind appears at least once, and a test fails when "
+                      ^^ "one is missing."
+                  )
+                  post.Heading "Text"
+                  post.Paragraph "Paragraphs escape their text, so <tags> & ampersands print as written."
+                  post.Note "A note renders as an aside."
+                  post.Heading "Code"
+                  post.Code ("spiral", "inl twice f x = f (f x)\ntwice ((+) 1i32) 40i32")
+                  post.Terminal ("pwsh scripts/build.ps1", "BLOG-OK blog/engine")
+                  post.Heading "Data"
+                  post.Table (
+                      [ "Block"; "Renders as" ],
+                      [
+                          [ "Heading"; "an h2 with a section anchor and a table of contents entry" ]
+                          [ "Table"; "a table with a head row and escaped cells" ]
+                      ]
+                  )
+                  post.Rule
+                  post.Heading "Conclusion"
+                  post.Paragraph "Real posts live in the repositories they describe; this one only shows the machinery."
+              ]
+      }
+
+  := release () : page.entry =
+      := a = article ()
+      { a ?|
+          slug = "showcase-release"
+          title = "Engine Release Notes"
+          kind = page.Release
+          blurb = "A sample release entry, so the Releases tab has content."
+          blocks = [ post.Paragraph "Release entries share the article layout and get a Release label in the index." ]
+      }
+
+  := entries () : list page.entry =
+      [ article (); release () ]
+
+  := block_tag (b : post.block) : string =
+      ?= b ?|
+      | post.Heading _ => "heading"
+      | post.Paragraph _ => "paragraph"
+      | post.Code _ => "code"
+      | post.Terminal _ => "terminal"
+      | post.Table _ => "table"
+      | post.Note _ => "note"
+      | post.Rule => "rule"
+
+  := ^ tags (blocks : list post.block) : string =
+      ?= blocks ?|
+      | [] => ""
+      | b :: rest => " " ++# block_tag b ++# tags rest
+
+  := ^ all_present (present : string) (wanted : list string) : bool =
+      ?= wanted ?|
+      | [] => !+
+      | t :: rest => (present |> sm'.contains (" " ++# t)) && all_present present rest
+  """,
+  timeout: 300_000
+)
+```
+
+#### every_block_kind_appears (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\n:= a = article ()\nall_present (tags a.blocks) [ \"heading\"; \"paragraph\"; \"code\"; \"terminal\"; \"table\"; \"note\"; \"rule\" ]\n|> _assert_eq !+","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  := a = article ()
+  all_present (tags a.blocks) [ "heading"; "paragraph"; "code"; "terminal"; "table"; "note"; "rule" ]
+  |> _assert_eq !+
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_release_entry_is_labeled (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\n:= r = release ()\npage.kind_label r.kind |> _assert_eq \"Release\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  := r = release ()
+  page.kind_label r.kind |> _assert_eq "Release"
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_showcase_renders_into_the_site (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nentries ()\n|> site.files\n|> site.paths\n|> _assert_eq (\n    \"index.html style.css rss.xml articles/index.html releases/index.html showcase/index.html \"\n    ^^ \"showcase-release/index.html\"\n)","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  entries ()
+  |> site.files
+  |> site.paths
+  |> _assert_eq (
+      "index.html style.css rss.xml articles/index.html releases/index.html showcase/index.html "
+      ^^ "showcase-release/index.html"
+  )
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_article_has_a_table_of_contents (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\n:= a = article ()\na.blocks\n|> page.table_of_contents\n|> sm'.contains \"<p>On this page</p>\"\n|> _assert_eq !+","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  := a = article ()
+  a.blocks
+  |> page.table_of_contents
+  |> sm'.contains "<p>On this page</p>"
+  |> _assert_eq !+
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_feed_links_both_showcase_entries (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\n:= feed = rss.render_feed \"Spiral Blog\" \"https://i574n.github.io/blog\" (entries ())\n:= article_linked = feed |> sm'.contains \"<link>https://i574n.github.io/blog/showcase/</link>\"\n:= release_linked = feed |> sm'.contains \"<link>https://i574n.github.io/blog/showcase-release/</link>\"\n(article_linked, release_linked) |> _assert_eq (!+, !+)","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  := feed = rss.render_feed "Spiral Blog" "https://i574n.github.io/blog" (entries ())
+  := article_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase/</link>"
+  := release_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase-release/</link>"
+  (article_linked, release_linked) |> _assert_eq (!+, !+)
+  """,
+  timeout: 300_000
+)
+```
+
+#### each_tab_keeps_one_showcase_entry (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\n:= articles = entries () |> index.only page.Article |> listm.length\n:= releases = entries () |> index.only page.Release |> listm.length\n(articles, releases) |> _assert_eq (1i32, 1i32)","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  := articles = entries () |> index.only page.Article |> listm.length
+  := releases = entries () |> index.only page.Release |> listm.length
+  (articles, releases) |> _assert_eq (1i32, 1i32)
+  """,
+  timeout: 300_000
+)
+```

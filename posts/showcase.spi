@@ -1,0 +1,109 @@
+///- --package ..
+:< sm'_operators
+:< engine
+
+test showcase static =
+    :< testing
+
+:= article () : page.entry =
+    {
+        slug = "showcase"
+        title = "Every Block, Once"
+        date = "2026-10-18"
+        kind = page.Article
+        authors = [ { name = "i574n"; handle = "i574n" } ]
+        blurb = "A sample post that renders every block the blog engine has."
+        blocks =
+            [
+                post.Paragraph (
+                    "This post exercises the engine: every block kind appears at least once, and a test fails when "
+                    ^^ "one is missing."
+                )
+                post.Heading "Text"
+                post.Paragraph "Paragraphs escape their text, so <tags> & ampersands print as written."
+                post.Note "A note renders as an aside."
+                post.Heading "Code"
+                post.Code ("spiral", "inl twice f x = f (f x)\ntwice ((+) 1i32) 40i32")
+                post.Terminal ("pwsh scripts/build.ps1", "BLOG-OK blog/engine")
+                post.Heading "Data"
+                post.Table (
+                    [ "Block"; "Renders as" ],
+                    [
+                        [ "Heading"; "an h2 with a section anchor and a table of contents entry" ]
+                        [ "Table"; "a table with a head row and escaped cells" ]
+                    ]
+                )
+                post.Rule
+                post.Heading "Conclusion"
+                post.Paragraph "Real posts live in the repositories they describe; this one only shows the machinery."
+            ]
+    }
+
+:= release () : page.entry =
+    := a = article ()
+    { a ?|
+        slug = "showcase-release"
+        title = "Engine Release Notes"
+        kind = page.Release
+        blurb = "A sample release entry, so the Releases tab has content."
+        blocks = [ post.Paragraph "Release entries share the article layout and get a Release label in the index." ]
+    }
+
+:= entries () : list page.entry =
+    [ article (); release () ]
+
+:= block_tag (b : post.block) : string =
+    ?= b ?|
+    | post.Heading _ => "heading"
+    | post.Paragraph _ => "paragraph"
+    | post.Code _ => "code"
+    | post.Terminal _ => "terminal"
+    | post.Table _ => "table"
+    | post.Note _ => "note"
+    | post.Rule => "rule"
+
+:= ^ tags (blocks : list post.block) : string =
+    ?= blocks ?|
+    | [] => ""
+    | b :: rest => " " ++# block_tag b ++# tags rest
+
+:= ^ all_present (present : string) (wanted : list string) : bool =
+    ?= wanted ?|
+    | [] => !+
+    | t :: rest => (present |> sm'.contains (" " ++# t)) && all_present present rest
+
+test every_block_kind_appears =
+    := a = article ()
+    all_present (tags a.blocks) [ "heading"; "paragraph"; "code"; "terminal"; "table"; "note"; "rule" ]
+    |> _assert_eq !+
+
+test the_release_entry_is_labeled =
+    := r = release ()
+    page.kind_label r.kind |> _assert_eq "Release"
+
+test the_showcase_renders_into_the_site =
+    entries ()
+    |> site.files
+    |> site.paths
+    |> _assert_eq (
+        "index.html style.css rss.xml articles/index.html releases/index.html showcase/index.html "
+        ^^ "showcase-release/index.html"
+    )
+
+test the_article_has_a_table_of_contents =
+    := a = article ()
+    a.blocks
+    |> page.table_of_contents
+    |> sm'.contains "<p>On this page</p>"
+    |> _assert_eq !+
+
+test the_feed_links_both_showcase_entries =
+    := feed = rss.render_feed "Spiral Blog" "https://i574n.github.io/blog" (entries ())
+    := article_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase/</link>"
+    := release_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase-release/</link>"
+    (article_linked, release_linked) |> _assert_eq (!+, !+)
+
+test each_tab_keeps_one_showcase_entry =
+    := articles = entries () |> index.only page.Article |> listm.length
+    := releases = entries () |> index.only page.Release |> listm.length
+    (articles, releases) |> _assert_eq (1i32, 1i32)

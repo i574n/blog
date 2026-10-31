@@ -1,0 +1,56 @@
+///- --package ..
+:< sm'_operators
+:< engine
+
+test index static =
+    :< testing
+
+:= year_of (e : page.entry) : string = sm'.slice 0i32 3i32 e.date
+
+:= entry_row (e : page.entry) : string =
+    "<li class=\"post\"><time>" ++# html.escape e.date ++# "</time>"
+    ++# "<span class=\"kind\">" ++# page.kind_label e.kind ++# "</span>"
+    ++# "<a href=\"/" ++# html.escape e.slug ++# "/\">" ++# html.escape e.title ++# "</a>"
+    ++# "<p>" ++# html.escape e.blurb ++# "</p></li>"
+
+:= ^ rows (current : string) (entries : list page.entry) : string =
+    ?= entries ?|
+    | [] => ? current = "" ?> "" |: "</ul>"
+    | e :: rest =>
+        := year = year_of e
+        ? year = current ?> entry_row e ++# rows current rest
+        |:
+            := close = ? current = "" ?> "" |: "</ul>"
+            close ++# "<h2 class=\"year\">" ++# year ++# "</h2><ul>" ++# entry_row e ++# rows year rest
+
+:= featured (entries : list page.entry) : string =
+    ?= entries ?|
+    | [] => ""
+    | e :: _ => "<section class=\"featured\"><span class=\"badge\">Latest</span>" ++# entry_row e ++# "</section>"
+
+:= ^ only (kind : page.kind) (entries : list page.entry) : list page.entry =
+    ?= entries ?|
+    | [] => []
+    | e :: rest => ? e.kind = kind ?> e :: only kind rest |: only kind rest
+
+:= render_index (entries : list page.entry) : string =
+    (
+        "<nav class=\"tabs\"><a href=\"/\">Everything</a><a href=\"/articles/\">Articles</a><a "
+        ^^ "href=\"/releases/\">Releases</a></nav>"
+    )
+    ++# featured entries
+    ++# rows "" entries
+
+test the_year_comes_from_the_date =
+    year_of (page.sample ()) |> _assert_eq "2026"
+
+test the_index_features_the_latest_post =
+    render_index [ page.sample () ] |> sm'.contains "<span class=\"badge\">Latest</span>" |> _assert_eq !+
+
+test posts_are_grouped_under_their_year =
+    render_index [ page.sample () ] |> sm'.contains "<h2 class=\"year\">2026</h2><ul>" |> _assert_eq !+
+
+test a_tab_keeps_only_its_kind =
+    := article = page.sample ()
+    := release = { article ?| slug = "v3"; kind = page.Release }
+    [ article; release ] |> only page.Release |> listm.length |> _assert_eq 1i32

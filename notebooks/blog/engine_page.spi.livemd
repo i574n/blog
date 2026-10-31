@@ -1,0 +1,184 @@
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --package ..\n:< sm'_operators\n:< engine","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --package ..
+  :< sm'_operators
+  :< engine
+  """,
+  timeout: 300_000
+)
+```
+
+#### page (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test static\n\n:< testing","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test static
+
+  :< testing
+  """,
+  timeout: 300_000
+)
+```
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":":| kind =\n    | Article\n    | Release\n\n:== author = { name : string; handle : string }\n\n:== entry =\n    {\n        slug : string\n        title : string\n        date : string\n        kind : kind\n        authors : list author\n        blurb : string\n        blocks : list post.block\n    }\n\n:= kind_label (k : kind) : string =\n    ?= k ?|\n    | Article => \"\"\n    | Release => \"Release\"\n\n:= ^ join_names (authors : list author) : string =\n    ?= authors ?|\n    | [] => \"\"\n    | [ a ] => html.escape a.name\n    | a :: rest => html.escape a.name ++# \", \" ++# join_names rest\n\n:= ^ render_blocks (section : i32) (blocks : list post.block) : string =\n    ?= blocks ?|\n    | [] => \"\"\n    | post.Heading text :: rest =>\n        \"<h2 id=\\\"section-\" ++#? section ++# \"\\\">\" ++# html.escape text ++# \"</h2>\" ++# render_blocks (section + 1) rest\n    | b :: rest => post.render_block b ++# render_blocks section rest\n\n:= ^ toc_items (section : i32) (blocks : list post.block) : string =\n    ?= blocks ?|\n    | [] => \"\"\n    | post.Heading text :: rest =>\n        \"<li><a href=\\\"#section-\"\n        ++#? section\n        ++# \"\\\">\"\n        ++# html.escape text\n        ++# \"</a></li>\"\n        ++# toc_items (section + 1) rest\n    | _ :: rest => toc_items section rest\n\n:= table_of_contents (blocks : list post.block) : string =\n    := items = toc_items 1 blocks\n    ? items = \"\" ?> \"\" |: \"<nav class=\\\"toc\\\"><p>On this page</p><ol>\" ++# items ++# \"</ol></nav>\"\n\n:= render_entry (e : entry) : string =\n    \"<article><h1 class=\\\"post-title\\\">\" ++# html.escape e.title ++# \"</h1>\"\n    ++# \"<p class=\\\"byline\\\">\" ++# join_names e.authors ++# \" &middot; \" ++# html.escape e.date ++# \"</p>\"\n    ++# table_of_contents e.blocks ++# render_blocks 1 e.blocks ++# \"</article>\"\n\n:= sample () : entry =\n    {\n        slug = \"sample\"\n        title = \"Sample Entry\"\n        date = \"2026-10-17\"\n        kind = Article\n        authors = [ { name = \"i574n\"; handle = \"i574n\" } ]\n        blurb = \"A fixture for the engine's own tests.\"\n        blocks = [ post.Heading \"The Matrix\"; post.Rule ]\n    }","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  :| kind =
+      | Article
+      | Release
+
+  :== author = { name : string; handle : string }
+
+  :== entry =
+      {
+          slug : string
+          title : string
+          date : string
+          kind : kind
+          authors : list author
+          blurb : string
+          blocks : list post.block
+      }
+
+  := kind_label (k : kind) : string =
+      ?= k ?|
+      | Article => ""
+      | Release => "Release"
+
+  := ^ join_names (authors : list author) : string =
+      ?= authors ?|
+      | [] => ""
+      | [ a ] => html.escape a.name
+      | a :: rest => html.escape a.name ++# ", " ++# join_names rest
+
+  := ^ render_blocks (section : i32) (blocks : list post.block) : string =
+      ?= blocks ?|
+      | [] => ""
+      | post.Heading text :: rest =>
+          "<h2 id=\"section-" ++#? section ++# "\">" ++# html.escape text ++# "</h2>" ++# render_blocks (section + 1) rest
+      | b :: rest => post.render_block b ++# render_blocks section rest
+
+  := ^ toc_items (section : i32) (blocks : list post.block) : string =
+      ?= blocks ?|
+      | [] => ""
+      | post.Heading text :: rest =>
+          "<li><a href=\"#section-"
+          ++#? section
+          ++# "\">"
+          ++# html.escape text
+          ++# "</a></li>"
+          ++# toc_items (section + 1) rest
+      | _ :: rest => toc_items section rest
+
+  := table_of_contents (blocks : list post.block) : string =
+      := items = toc_items 1 blocks
+      ? items = "" ?> "" |: "<nav class=\"toc\"><p>On this page</p><ol>" ++# items ++# "</ol></nav>"
+
+  := render_entry (e : entry) : string =
+      "<article><h1 class=\"post-title\">" ++# html.escape e.title ++# "</h1>"
+      ++# "<p class=\"byline\">" ++# join_names e.authors ++# " &middot; " ++# html.escape e.date ++# "</p>"
+      ++# table_of_contents e.blocks ++# render_blocks 1 e.blocks ++# "</article>"
+
+  := sample () : entry =
+      {
+          slug = "sample"
+          title = "Sample Entry"
+          date = "2026-10-17"
+          kind = Article
+          authors = [ { name = "i574n"; handle = "i574n" } ]
+          blurb = "A fixture for the engine's own tests."
+          blocks = [ post.Heading "The Matrix"; post.Rule ]
+      }
+  """,
+  timeout: 300_000
+)
+```
+
+#### an_article_has_no_type_label (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nkind_label Article |> _assert_eq \"\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  kind_label Article |> _assert_eq ""
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_byline_lists_authors_and_date (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_entry (sample ()) |> sm'.contains \"<p class=\\\"byline\\\">i574n &middot; 2026-10-17</p>\" |> _assert_eq !+","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_entry (sample ()) |> sm'.contains "<p class=\"byline\">i574n &middot; 2026-10-17</p>" |> _assert_eq !+
+  """,
+  timeout: 300_000
+)
+```
+
+#### blocks_render_in_order (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\nrender_entry (sample ())\n|> sm'.contains \"<h2 id=\\\"section-1\\\">The Matrix</h2><hr class=\\\"section-rule\\\">\"\n|> _assert_eq !+","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  render_entry (sample ())
+  |> sm'.contains "<h2 id=\"section-1\">The Matrix</h2><hr class=\"section-rule\">"
+  |> _assert_eq !+
+  """,
+  timeout: 300_000
+)
+```
+
+#### the_table_of_contents_links_every_heading (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\ntable_of_contents [ post.Heading \"A\"; post.Paragraph \"x\"; post.Heading \"B\" ]\n|> _assert_eq (\n    \"<nav class=\\\"toc\\\"><p>On this page</p><ol><li><a href=\\\"#section-1\\\">A</a></li><li><a \"\n    ^^ \"href=\\\"#section-2\\\">B</a></li></ol></nav>\"\n)","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  table_of_contents [ post.Heading "A"; post.Paragraph "x"; post.Heading "B" ]
+  |> _assert_eq (
+      "<nav class=\"toc\"><p>On this page</p><ol><li><a href=\"#section-1\">A</a></li><li><a "
+      ^^ "href=\"#section-2\">B</a></li></ol></nav>"
+  )
+  """,
+  timeout: 300_000
+)
+```
+
+#### a_post_without_headings_has_no_table_of_contents (test)
+
+<!-- livebook:{"chunks":null,"kind":"Elixir.Spiral.Cells.SmartCell","attrs":{"timeout":300,"source":"///- --test\n\ntable_of_contents [ post.Paragraph \"x\" ] |> _assert_eq \"\"","print_code":false},"livebook_object":"smart_cell"} -->
+
+```elixir
+Spiral.Cells.eval!(
+  ~S"""
+  ///- --test
+
+  table_of_contents [ post.Paragraph "x" ] |> _assert_eq ""
+  """,
+  timeout: 300_000
+)
+```
