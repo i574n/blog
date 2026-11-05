@@ -2,7 +2,7 @@
 :< sm'_operators
 :< engine
 
-test page static =
+:# page static =
     :< testing
 
 :| kind =
@@ -72,23 +72,23 @@ test page static =
         blocks = [ post.Heading "The Matrix"; post.Rule ]
     }
 
-test an_article_has_no_type_label =
+:# an_article_has_no_type_label =
     kind_label Article |> _assert_eq ""
 
-test the_byline_lists_authors_and_date =
+:# the_byline_lists_authors_and_date =
     render_entry (sample ()) |> sm'.contains "<p class=\"byline\">i574n &middot; 2026-10-17</p>" |> _assert_eq !+
 
-test blocks_render_in_order =
+:# blocks_render_in_order =
     render_entry (sample ())
     |> sm'.contains "<h2 id=\"section-1\">The Matrix</h2><hr class=\"section-rule\">"
     |> _assert_eq !+
 
-test the_table_of_contents_links_every_heading =
+:# the_table_of_contents_links_every_heading =
     table_of_contents [ post.Heading "A"; post.Paragraph "x"; post.Heading "B" ]
     |> _assert_eq (
         "<nav class=\"toc\"><p>On this page</p><ol><li><a href=\"#section-1\">A</a></li><li><a "
         ^^ "href=\"#section-2\">B</a></li></ol></nav>"
     )
 
-test a_post_without_headings_has_no_table_of_contents =
+:# a_post_without_headings_has_no_table_of_contents =
     table_of_contents [ post.Paragraph "x" ] |> _assert_eq ""

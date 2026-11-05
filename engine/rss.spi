@@ -2,7 +2,7 @@
 :< sm'_operators
 :< engine
 
-test rss static =
+:# rss static =
     :< testing
 
 := item (base : string) (e : page.entry) : string =
@@ -38,12 +38,12 @@ test rss static =
     ++# items base entries
     ++# "</channel></rss>"
 
-test the_feed_links_each_post_by_its_slug =
+:# the_feed_links_each_post_by_its_slug =
     render_feed "Spiral Blog" "https://i574n.github.io/blog" [ page.sample () ]
     |> sm'.contains "<item><title>Sample Entry</title><link>https://i574n.github.io/blog/sample/</link>"
     |> _assert_eq !+
 
-test the_feed_is_rss_2_with_dublin_core_dates =
+:# the_feed_is_rss_2_with_dublin_core_dates =
     render_feed "Spiral Blog" "https://i574n.github.io/blog" [ page.sample () ]
     |> \ feed =>
         (feed |> sm'.starts_with "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"")

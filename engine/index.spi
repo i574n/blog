@@ -2,7 +2,7 @@
 :< sm'_operators
 :< engine
 
-test index static =
+:# index static =
     :< testing
 
 := year_of (e : page.entry) : string = sm'.slice 0i32 3i32 e.date
@@ -41,16 +41,16 @@ test index static =
     ++# featured entries
     ++# rows "" entries
 
-test the_year_comes_from_the_date =
+:# the_year_comes_from_the_date =
     year_of (page.sample ()) |> _assert_eq "2026"
 
-test the_index_features_the_latest_post =
+:# the_index_features_the_latest_post =
     render_index [ page.sample () ] |> sm'.contains "<span class=\"badge\">Latest</span>" |> _assert_eq !+
 
-test posts_are_grouped_under_their_year =
+:# posts_are_grouped_under_their_year =
     render_index [ page.sample () ] |> sm'.contains "<h2 class=\"year\">2026</h2><ul>" |> _assert_eq !+
 
-test a_tab_keeps_only_its_kind =
+:# a_tab_keeps_only_its_kind =
     := article = page.sample ()
     := release = { article ?| slug = "v3"; kind = page.Release }
     [ article; release ] |> only page.Release |> listm.length |> _assert_eq 1i32

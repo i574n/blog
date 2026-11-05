@@ -2,7 +2,7 @@
 :< sm'_operators
 :< engine
 
-test showcase static =
+:# showcase static =
     :< testing
 
 := article () : page.entry =
@@ -72,16 +72,16 @@ test showcase static =
     | [] => !+
     | t :: rest => (present |> sm'.contains (" " ++# t)) && all_present present rest
 
-test every_block_kind_appears =
+:# every_block_kind_appears =
     := a = article ()
     all_present (tags a.blocks) [ "heading"; "paragraph"; "code"; "terminal"; "table"; "note"; "rule" ]
     |> _assert_eq !+
 
-test the_release_entry_is_labeled =
+:# the_release_entry_is_labeled =
     := r = release ()
     page.kind_label r.kind |> _assert_eq "Release"
 
-test the_showcase_renders_into_the_site =
+:# the_showcase_renders_into_the_site =
     entries ()
     |> site.files
     |> site.paths
@@ -90,20 +90,20 @@ test the_showcase_renders_into_the_site =
         ^^ "showcase-release/index.html"
     )
 
-test the_article_has_a_table_of_contents =
+:# the_article_has_a_table_of_contents =
     := a = article ()
     a.blocks
     |> page.table_of_contents
     |> sm'.contains "<p>On this page</p>"
     |> _assert_eq !+
 
-test the_feed_links_both_showcase_entries =
+:# the_feed_links_both_showcase_entries =
     := feed = rss.render_feed "Spiral Blog" "https://i574n.github.io/blog" (entries ())
     := article_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase/</link>"
     := release_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase-release/</link>"
     (article_linked, release_linked) |> _assert_eq (!+, !+)
 
-test each_tab_keeps_one_showcase_entry =
+:# each_tab_keeps_one_showcase_entry =
     := articles = entries () |> index.only page.Article |> listm.length
     := releases = entries () |> index.only page.Release |> listm.length
     (articles, releases) |> _assert_eq (1i32, 1i32)

@@ -2,7 +2,7 @@
 :< sm'_operators
 :< engine
 
-test site static =
+:# site static =
     :< testing
 
 :== file = { path : string; content : string }
@@ -47,12 +47,12 @@ test site static =
     | [ f ] => f.path
     | f :: rest => f.path ++# " " ++# paths rest
 
-test the_site_has_an_index_and_one_folder_per_post =
+:# the_site_has_an_index_and_one_folder_per_post =
     files [ page.sample () ]
     |> paths
     |> _assert_eq "index.html style.css rss.xml articles/index.html releases/index.html sample/index.html"
 
-test every_page_shares_the_layout =
+:# every_page_shares_the_layout =
     := ^ all_wrapped (fs : list file) : bool =
         ?= fs ?|
         | [] => !+
@@ -63,7 +63,7 @@ test every_page_shares_the_layout =
         | _ :: rest => all_wrapped rest
     files [ page.sample () ] |> all_wrapped |> _assert_eq !+
 
-test the_post_page_title_is_escaped_into_the_head =
+:# the_post_page_title_is_escaped_into_the_head =
     := e = page.sample ()
     files [ { e ?| title = "A & B" } ]
     |> \ fs =>
