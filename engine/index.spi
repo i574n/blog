@@ -40,19 +40,24 @@
     ++# featured root entries
     ++# rows root "" entries
 
+///> zig
 :# the_year_comes_from_the_date =
     year_of (page.sample ()) |> _assert_eq "2026"
 
+///> zig
 :# the_index_features_the_latest_post =
     render_index "/" [ page.sample () ] |> sm'.contains "<span class=\"badge\">Latest</span>" |> _assert_eq !+
 
+///> zig
 :# posts_are_grouped_under_their_year =
     render_index "/" [ page.sample () ] |> sm'.contains "<h2 class=\"year\">2026</h2><ul>" |> _assert_eq !+
 
+///> zig
 :# a_tab_keeps_only_its_kind =
     := article = page.sample ()
     := release = { article ?| slug = "v3"; kind = page.Release }
     [ article; release ] |> only page.Release |> listm.length |> _assert_eq 1i32
 
+///> zig
 :# links_start_at_the_site_root =
     render_index "/blog/" [ page.sample () ] |> sm'.contains "<a href=\"/blog/sample/\">" |> _assert_eq !+

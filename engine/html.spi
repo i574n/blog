@@ -4,8 +4,10 @@
 
 := escape (text : string) : string = markup.escape text |> markup.markup_text
 
+///> zig
 :# escape_keeps_markup_out_of_text =
     escape "<a href=\"x\"> & b" |> _assert_eq "&lt;a href=&quot;x&quot;&gt; &amp; b"
 
+///> zig
 :# escape_leaves_plain_text_alone =
     escape "Behind the Scenes" |> _assert_eq "Behind the Scenes"

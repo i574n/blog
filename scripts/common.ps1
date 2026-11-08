@@ -21,7 +21,7 @@ function Invoke-SpiralTests([Parameter(Mandatory)] [string] $PackageDir, [Parame
     $failed = [Collections.Generic.List[string]]::new()
     try {
         foreach ($module in $Modules) {
-            $runner = Join-Path $SpiralRoot 'apps/cells/spi/run_notebook.ps1'
+            $runner = Join-Path ($env:SPIRAL_CELLS_ROOT ? $env:SPIRAL_CELLS_ROOT : (Join-Path $SpiralRoot 'apps/cells')) 'spi/run_notebook.ps1'
             $ok = $true
             try { { pwsh -NoProfile -File $runner --path (Join-Path $PackageDir "$module.spi") --output-path (Join-Path $notebooks "$($module -replace '/', '_').spi.ipynb") --no-html --livemd } | Invoke-Block } catch { $ok = $false }
             if ($LASTEXITCODE) { $ok = $false }

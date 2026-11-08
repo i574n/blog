@@ -72,15 +72,18 @@
     | [] => !+
     | t :: rest => (present |> sm'.contains (" " ++# t)) && all_present present rest
 
+///> zig
 :# every_block_kind_appears =
     := a = article ()
     all_present (tags a.blocks) [ "heading"; "paragraph"; "code"; "terminal"; "table"; "note"; "rule" ]
     |> _assert_eq !+
 
+///> zig
 :# the_release_entry_is_labeled =
     := r = release ()
     page.kind_label r.kind |> _assert_eq "Release"
 
+///> zig
 :# the_showcase_renders_into_the_site =
     entries ()
     |> site.files
@@ -90,6 +93,7 @@
         ^^ "showcase-release/index.html"
     )
 
+///> zig
 :# the_article_has_a_table_of_contents =
     := a = article ()
     a.blocks
@@ -97,12 +101,14 @@
     |> sm'.contains "<p>On this page</p>"
     |> _assert_eq !+
 
+///> zig
 :# the_feed_links_both_showcase_entries =
     := feed = rss.render_feed "Spiral Blog" "https://i574n.github.io/blog" (entries ())
     := article_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase/</link>"
     := release_linked = feed |> sm'.contains "<link>https://i574n.github.io/blog/showcase-release/</link>"
     (article_linked, release_linked) |> _assert_eq (!+, !+)
 
+///> zig
 :# each_tab_keeps_one_showcase_entry =
     := articles = entries () |> index.only page.Article |> listm.length
     := releases = entries () |> index.only page.Release |> listm.length

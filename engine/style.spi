@@ -29,5 +29,6 @@
         .note { border-left: 4px solid #d8a14f; background: #fbf1df; padding: 12px 16px; border-radius: 4px; }
         """
 
+///> zig
 :# the_stylesheet_defines_the_palette =
     css () |> sm'.starts_with ":root { --ink:" |> _assert_eq !+

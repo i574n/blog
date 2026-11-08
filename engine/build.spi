@@ -21,7 +21,7 @@
 
 ///> rust -d chrono
 :# the_site_is_written_as_a_folder_tree =
-    := root, disposable = file_system.create_temp_dir ()
+    := root, disposable = file_system.create_temp_directory ()
     ~~
         [ page.sample () ] |> site.files |> write_files root
         root </> "index.html" |> file_system.read_all_text |> sm'.starts_with "<!doctype html>" |> _assert_eq !+
