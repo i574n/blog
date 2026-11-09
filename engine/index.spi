@@ -18,7 +18,8 @@
     | [] => ? current = "" ?> "" |: "</ul>"
     | e :: rest =>
         := year = year_of e
-        ? year = current ?> entry_row root e ++# rows root current rest
+        ? year = current
+        ?> entry_row root e ++# rows root current rest
         |:
             := close = ? current = "" ?> "" |: "</ul>"
             close ++# "<h2 class=\"year\">" ++# year ++# "</h2><ul>" ++# entry_row root e ++# rows root year rest
